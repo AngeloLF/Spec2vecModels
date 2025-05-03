@@ -16,13 +16,15 @@ padding= 1
 bias= True
 num_enc_conv= 2
 
-data_path= "./../output_simu"
+name = "JEC_Unet"
+
+data_path= "./output_simu"
 folder_train= "train256"
 folder_test = "valid64"
 folder_images= "image"
 folder_spectrum = "spectrum"
 
-out_path = "."
+out_path = "Spec2vecModels_Results"
 out_loss = "loss"
 out_states = "states"
 out_epoch = "epoch"

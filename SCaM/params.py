@@ -5,14 +5,15 @@ def __getattr__(name):
     if name in locals() : return locals()[name]
     else : raise ValueError(f"params (of SCaM) dont have {name=}.")
 
+name = "SCaM"
 
-path = "./../output_simu"
+path = "./output_simu"
 folder_train = "train256"
 folder_valid = "valid64"
 folder_image = "image"
 folder_spectrum = "spectrum"
 
-out_path = "."
+out_path = "Spec2vecModels_Results"
 out_loss = "loss"
 out_states ="states"
 out_epoch = "epoch"

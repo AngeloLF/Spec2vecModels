@@ -179,6 +179,8 @@ if __name__ == "__main__":
         print("Info: # workers set to", NUM_CORES // 2)
         args.num_workers = NUM_CORES // 2
 
+    name = args.name
+
     # where to find the dataset (train & test) (input images & output spectra)
     args.train_img_dir  = f"{args.data_path}/{args.folder_train}/{args.folder_images}"
     args.train_spec_dir = f"{args.data_path}/{args.folder_train}/{args.folder_spectrum}"
@@ -186,14 +188,17 @@ if __name__ == "__main__":
     args.test_spec_dir  = f"{args.data_path}/{args.folder_test}/{args.folder_spectrum}"
 
     # where to put all model training stuff
-    output_loss = f"{args.out_path}/{args.out_loss}"
-    output_state = f"{args.out_path}/{args.out_states}"
-    output_epoch = f"{args.out_path}/{args.out_epoch}"
+    output_loss = f"./{args.out_path}/{name}/{args.out_loss}"
+    output_state = f"./{args.out_path}/{name}/{args.out_states}"
+    output_epoch = f"./{args.out_path}/{name}/{args.out_epoch}"
 
+    if args.out_path not in os.listdir() : os.mkdir(args.out_path)
+    if name not in os.listdir(args.out_path) : os.mkdir(f"{args.out_path}/{name}")
     if args.out_epoch in os.listdir(args.out_path) : shutil.rmtree(f"{args.out_path}/{args.out_epoch}")
 
     for f in [args.out_loss, args.out_states, args.out_epoch]:
-        if f not in os.listdir(args.out_path) : os.mkdir(f"{args.out_path}/{f}")
+        if f not in os.listdir(f"{args.out_path}/{name}") : os.mkdir(f"{args.out_path}/{name}/{f}")
+
 
     # device cpu/gpu...
     args.device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")

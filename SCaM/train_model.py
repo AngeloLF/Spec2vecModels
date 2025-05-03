@@ -18,6 +18,7 @@ print(f"Utilisation de l'appareil : {device}")
 batch_size = params.batch_size
 learning_rate = params.lr_init
 num_epochs = params.num_epochs
+name = params.name
 
 # Chemins des dossiers de données
 path = params.path
@@ -31,14 +32,17 @@ valid_image_dir    = f"{path}/{valid_simu_name}/{fold_image}"
 valid_spectrum_dir = f"{path}/{valid_simu_name}/{fold_spectrum}"
 
 # where to put all model training stuff
-output_loss = f"{params.out_path}/{params.out_loss}"
-output_state = f"{params.out_path}/{params.out_states}"
-output_epoch = f"{params.out_path}/{params.out_epoch}"
+output_loss = f"./{params.out_path}/{name}/{params.out_loss}"
+output_state = f"./{params.out_path}/{name}/{params.out_states}"
+output_epoch = f"./{params.out_path}/{name}/{params.out_epoch}"
 
+if params.out_path not in os.listdir() : os.mkdir(params.out_path)
+if name not in os.listdir(params.out_path) : os.mkdir(f"{params.out_path}/{name}")
 if params.out_epoch in os.listdir(params.out_path) : shutil.rmtree(f"{params.out_path}/{params.out_epoch}")
 
 for f in [params.out_loss, params.out_states, params.out_epoch]:
-    if f not in os.listdir(params.out_path) : os.mkdir(f"{params.out_path}/{f}")
+    if f not in os.listdir(f"{params.out_path}/{name}") : os.mkdir(f"{params.out_path}/{name}/{f}")
+
 
 
 # Créer le Dataset complet
@@ -61,6 +65,12 @@ valid_list_loss = np.zeros(num_epochs)
 
 best_val_loss = np.inf
 best_state = None
+
+print(
+        "number of parameters is ",
+        sum(p.numel() for p in model.parameters() if p.requires_grad) // 10**6,
+        "millions",
+    )
 
 # Boucle d'entraînement
 for epoch in range(num_epochs):
