@@ -9,13 +9,13 @@ import params as args
 
 import torch
 from torch.utils.data import DataLoader, Dataset
+import torch.nn as nn
 import numpy as np
 import regex as re
 import glob
 
 import coloralf as c
-
-from model import *
+from model import UNet, CustumDataset
 
 
 ################
@@ -33,76 +33,7 @@ def set_seed(seed):
 # dataloader
 ################
 
-#bug JEC 9 avril 25
-#def get_list(dir, pattern):
-#    dir = pathlib.Path(dir)
-#    return list(dir.glob(pattern))
 
-file_pattern = re.compile(r'.*?(\d+).*?')
-def get_order(file):
-    match = file_pattern.match(os.path.basename(file))
-    if not match:
-        return math.inf
-    return int(match.groups()[-1])
-
-def get_list(dir, pattern):
-    #dir = pathlib.Path(dir)
-    a = list(glob.glob(dir+'/'+pattern))
-    return sorted(a, key=get_order)
-
-
-class CustumDataset(Dataset):
-    """Load the data set which is supposed to be a Numpy structured array
-    'img': the images tensors  N H W
-    'spec': the original spectrum
-    """
-
-    def __init__(self, img_path, spec_path, *, transform=None):
-
-        self.image_files = get_list(img_path, "image*.npy")
-        self.spectrum_files = get_list(spec_path, "spectrum*.npy")
-
-        print(f"Len : {len(self.image_files)} : {len(self.spectrum_files)}")
-
-        assert len(self.image_files) == len(
-            self.spectrum_files
-        ), f"number of images and spectra error {img_path}, {spec_path}"
-
-        #matching image-spect verification
-        no_pb = True
-        num_pb=0
-        for i in range(len(self.image_files)):
-            idx_img = re.findall(r'\d+', os.path.basename(self.image_files[i]))[0]
-            idx_spec = re.findall(r'\d+', os.path.basename(self.spectrum_files[i]))[0]
-            if  idx_img != idx_spec:
-                print('pb at ',i,idx_img,idx_spec)
-                num_pb += 1
-                if no_pb:
-                    no_pb = False
-        assert no_pb, f"there are {num_pb} non matching betwwen images & spectra"
-        
-
-        print(f"CustumDataset: {len(self.image_files)} img/spec loaded")
-        self.transform = transform
-
-    def __len__(self):
-        return len(self.image_files)
-
-    def __getitem__(self, index):
-        image = np.load(self.image_files[index])      # HxW
-        image = np.expand_dims(image, axis=0)  # 1xHxW
-        spect = np.load(self.spectrum_files[index])
-
-        # to torch tensor
-        image = torch.from_numpy(image)
-        spect = torch.from_numpy(spect)
-
-        # choice to transform as torch array
-        # overwise make it as numpy array
-        if self.transform is not None:
-            image = self.transform(image)
-
-        return image, spect
 
 
 ################
