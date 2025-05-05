@@ -192,7 +192,7 @@ if __name__ == "__main__":
     output_state = f"./{args.out_path}/{name}/{args.out_states}"
     output_epoch = f"./{args.out_path}/{name}/{args.out_epoch}"
 
-    if args.out_path not in os.listdir() : os.mkdir(args.out_path)
+    # if args.out_path not in os.listdir() : os.mkdir(args.out_path)
     if name not in os.listdir(args.out_path) : os.mkdir(f"{args.out_path}/{name}")
     if args.out_epoch in os.listdir(args.out_path) : shutil.rmtree(f"{args.out_path}/{args.out_epoch}")
 

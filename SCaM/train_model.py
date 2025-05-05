@@ -36,9 +36,9 @@ output_loss = f"./{params.out_path}/{name}/{params.out_loss}"
 output_state = f"./{params.out_path}/{name}/{params.out_states}"
 output_epoch = f"./{params.out_path}/{name}/{params.out_epoch}"
 
-if params.out_path not in os.listdir() : os.mkdir(params.out_path)
+# if params.out_path not in os.listdir() : os.mkdir(params.out_path)
 if name not in os.listdir(params.out_path) : os.mkdir(f"{params.out_path}/{name}")
-if params.out_epoch in os.listdir(params.out_path) : shutil.rmtree(f"{params.out_path}/{params.out_epoch}")
+if params.out_epoch in os.listdir(f"{params.out_path}/{name}") : shutil.rmtree(f"{params.out_path}/{name}/{params.out_epoch}")
 
 for f in [params.out_loss, params.out_states, params.out_epoch]:
     if f not in os.listdir(f"{params.out_path}/{name}") : os.mkdir(f"{params.out_path}/{name}/{f}")

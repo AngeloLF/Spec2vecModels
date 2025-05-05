@@ -18,13 +18,13 @@ num_enc_conv= 2
 
 name = "JEC_Unet"
 
-data_path= "./output_simu"
+data_path= "./results/output_simu"
 folder_train= "train256"
 folder_test = "valid64"
 folder_images= "image"
 folder_spectrum = "spectrum"
 
-out_path = "Spec2vecModels_Results"
+out_path = "./results/Spec2vecModels_Results"
 out_loss = "loss"
 out_states = "states"
 out_epoch = "epoch"
@@ -40,7 +40,7 @@ use_scheduler= True
 lr_init= 0.001
 batch_size= 32
 test_batch_size= 32
-num_epochs= 5
+num_epochs= 2
 start_epoch= 0
 patience= 5
 lr_decay= 0.1

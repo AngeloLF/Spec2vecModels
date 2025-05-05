@@ -7,13 +7,13 @@ def __getattr__(name):
 
 name = "SCaM"
 
-path = "./output_simu"
+path = "./results/output_simu"
 folder_train = "train256"
 folder_valid = "valid64"
 folder_image = "image"
 folder_spectrum = "spectrum"
 
-out_path = "Spec2vecModels_Results"
+out_path = "./results/Spec2vecModels_Results"
 out_loss = "loss"
 out_states ="states"
 out_epoch = "epoch"
@@ -22,6 +22,6 @@ seed = 42
 num_workers = 4
 lr_init = 0.001
 batch_size = 64
-num_epochs = 5
+num_epochs = 2
 # lr_decay = 0.1
 n_bins = 800
