@@ -17,6 +17,9 @@ import glob
 import coloralf as c
 from model import UNet, CustumDataset
 
+sys.path.append("./")
+from TeleBot_Perso.telebot import send_message, send_image
+
 
 ################
 # Utils
@@ -112,23 +115,44 @@ if __name__ == "__main__":
 
     name = args.name
 
+    # find folders train & valid with sys argv
+    folder_train = None
+    folder_valid = None
+
+    for argv in sys.argv[1:]:
+
+        if argv[:6] == "train=" : folder_train = argv[6:]
+        if argv[:6] == "valid=" : folder_valid = argv[6:]
+
+    # Define train folder
+    if folder_train is None:
+        print(f"{c.r}WARNING : train folder is not define (train=<folder_train>){c.d}")
+        raise ValueError("Train folder error")
+
+    # Define train folder
+    if folder_valid is None:
+        print(f"{c.r}WARNING : valid folder is not define (train=<folder_valid>){c.d}")
+        raise ValueError("Valid folder error")
+
     # where to find the dataset (train & test) (input images & output spectra)
-    args.train_img_dir  = f"{args.data_path}/{args.folder_train}/{args.folder_images}"
-    args.train_spec_dir = f"{args.data_path}/{args.folder_train}/{args.folder_spectrum}"
-    args.test_img_dir   = f"{args.data_path}/{args.folder_test}/{args.folder_images}"
-    args.test_spec_dir  = f"{args.data_path}/{args.folder_test}/{args.folder_spectrum}"
+    args.train_img_dir  = f"{args.data_path}/{folder_train}/{args.folder_images}"
+    args.train_spec_dir = f"{args.data_path}/{folder_train}/{args.folder_spectrum}"
+    args.test_img_dir   = f"{args.data_path}/{folder_valid}/{args.folder_images}"
+    args.test_spec_dir  = f"{args.data_path}/{folder_valid}/{args.folder_spectrum}"
 
     # where to put all model training stuff
-    output_loss = f"./{args.out_path}/{name}/{args.out_loss}"
-    output_state = f"./{args.out_path}/{name}/{args.out_states}"
-    output_epoch = f"./{args.out_path}/{name}/{args.out_epoch}"
+    full_out_path = f"{args.out_path}/{args.out_dir}/{name}"
+    output_loss  = f"{full_out_path}/{args.out_loss}"
+    output_state = f"{full_out_path}/{args.out_states}"
+    output_epoch = f"{full_out_path}/{args.out_epoch}"
 
     # if args.out_path not in os.listdir() : os.mkdir(args.out_path)
-    if name not in os.listdir(args.out_path) : os.mkdir(f"{args.out_path}/{name}")
-    if args.out_epoch in os.listdir(args.out_path) : shutil.rmtree(f"{args.out_path}/{args.out_epoch}")
+    if args.out_dir not in os.listdir(args.out_path) : os.mkdir(f"{args.out_path}/{args.out_dir}")
+    if name not in os.listdir(f"{args.out_path}/{args.out_dir}") : os.mkdir(full_out_path)
+    if args.out_epoch in os.listdir(full_out_path) : shutil.rmtree(f"{full_out_path}/{args.out_epoch}")
 
     for f in [args.out_loss, args.out_states, args.out_epoch]:
-        if f not in os.listdir(f"{args.out_path}/{name}") : os.mkdir(f"{args.out_path}/{name}/{f}")
+        if f not in os.listdir(f"{full_out_path}") : os.mkdir(f"{full_out_path}/{f}")
 
 
     # device cpu/gpu...
@@ -251,8 +275,8 @@ if __name__ == "__main__":
                     "optimizer_state_dict": optimizer.state_dict(),
                 }
 
-    np.save(f"{output_loss}/{args.folder_train}.npy", np.array((train_loss_history, test_loss_history)))
-    torch.save(best_state, f"{output_state}/{args.folder_train}.pth")   
+    np.save(f"{output_loss}/{folder_train}.npy", np.array((train_loss_history, test_loss_history)))
+    torch.save(best_state, f"{output_state}/{folder_train}.pth")   
 
     # Bye
     tf = time.time()

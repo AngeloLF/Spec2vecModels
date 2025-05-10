@@ -8,12 +8,11 @@ def __getattr__(name):
 name = "SCaM"
 
 path = "./results/output_simu"
-folder_train = "train256"
-folder_valid = "valid64"
 folder_image = "image"
 folder_spectrum = "spectrum"
 
-out_path = "./results/Spec2vecModels_Results"
+out_path = "./results"
+out_dir = "Spec2vecModels_Results"
 out_loss = "loss"
 out_states ="states"
 out_epoch = "epoch"

@@ -7,7 +7,6 @@ import regex as re
 import glob, os, sys
 import numpy as np
 
-print(sys.argv[0])
 
 if "apply_model" not in sys.argv[0]:
     import params as args
@@ -52,7 +51,7 @@ class FullyConnected(nn.Module):
 class UNet(nn.Module):
     def __init__(self):
 
-        self.nameOfThisModel = "JEC_UNet"
+        self.nameOfThisModel = "JEC_Unet"
 
         # with open("params.json") as jsonfile:
         #     settings_dict = json.load(jsonfile)
@@ -556,7 +555,7 @@ class CustumDataset(Dataset):
         self.image_files = get_list(img_path, "image*.npy")
         self.spectrum_files = get_list(spec_path, "spectrum*.npy")
 
-        print(f"Len : {len(self.image_files)} : {len(self.spectrum_files)}")
+        # print(f"Len : {len(self.image_files)} : {len(self.spectrum_files)}")
 
         assert len(self.image_files) == len(
             self.spectrum_files
@@ -576,7 +575,7 @@ class CustumDataset(Dataset):
         assert no_pb, f"there are {num_pb} non matching betwwen images & spectra"
         
 
-        print(f"CustumDataset: {len(self.image_files)} img/spec loaded")
+        # print(f"CustumDataset: {len(self.image_files)} img/spec loaded")
         self.transform = transform
 
     def __len__(self):

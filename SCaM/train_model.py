@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader
-import os
+import os, sys
 import shutil
 import numpy as np
 from tqdm import tqdm
@@ -14,6 +14,26 @@ import coloralf as c
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Utilisation de l'appareil : {device}")
 
+
+# find folders train & valid with sys argv
+folder_train = None
+folder_valid = None
+
+for argv in sys.argv[1:]:
+
+    if argv[:6] == "train=" : folder_train = argv[6:]
+    if argv[:6] == "valid=" : folder_valid = argv[6:]
+
+# Define train folder
+if folder_train is None:
+    print(f"{c.r}WARNING : train folder is not define (train=<folder_train>){c.d}")
+    raise ValueError("Train folder error")
+
+# Define train folder
+if folder_valid is None:
+    print(f"{c.r}WARNING : valid folder is not define (train=<folder_valid>){c.d}")
+    raise ValueError("Valid folder error")
+
 # Hyperparamètres
 batch_size = params.batch_size
 learning_rate = params.lr_init
@@ -22,8 +42,8 @@ name = params.name
 
 # Chemins des dossiers de données
 path = params.path
-train_simu_name = params.folder_train
-valid_simu_name = params.folder_valid
+train_simu_name = folder_train
+valid_simu_name = folder_valid
 fold_image, fold_spectrum = params.folder_image, params.folder_spectrum
 
 train_image_dir    = f"{path}/{train_simu_name}/{fold_image}"
@@ -32,16 +52,18 @@ valid_image_dir    = f"{path}/{valid_simu_name}/{fold_image}"
 valid_spectrum_dir = f"{path}/{valid_simu_name}/{fold_spectrum}"
 
 # where to put all model training stuff
-output_loss = f"./{params.out_path}/{name}/{params.out_loss}"
-output_state = f"./{params.out_path}/{name}/{params.out_states}"
-output_epoch = f"./{params.out_path}/{name}/{params.out_epoch}"
+full_out_path = f"{params.out_path}/{params.out_dir}/{name}"
+output_loss  = f"{full_out_path}/{params.out_loss}"
+output_state = f"{full_out_path}/{params.out_states}"
+output_epoch = f"{full_out_path}/{params.out_epoch}"
 
 # if params.out_path not in os.listdir() : os.mkdir(params.out_path)
-if name not in os.listdir(params.out_path) : os.mkdir(f"{params.out_path}/{name}")
-if params.out_epoch in os.listdir(f"{params.out_path}/{name}") : shutil.rmtree(f"{params.out_path}/{name}/{params.out_epoch}")
+if params.out_dir not in os.listdir(params.out_path) : os.mkdir(f"{params.out_path}/{params.out_dir}")
+if name not in os.listdir(f"{params.out_path}/{params.out_dir}") : os.mkdir(full_out_path)
+if params.out_epoch in os.listdir(full_out_path) : shutil.rmtree(f"{full_out_path}/{params.out_epoch}")
 
 for f in [params.out_loss, params.out_states, params.out_epoch]:
-    if f not in os.listdir(f"{params.out_path}/{name}") : os.mkdir(f"{params.out_path}/{name}/{f}")
+    if f not in os.listdir(f"{full_out_path}") : os.mkdir(f"{full_out_path}/{f}")
 
 
 
@@ -122,5 +144,5 @@ for epoch in range(num_epochs):
 
 print("Entraînement terminé.")
 
-np.save(f"{output_loss}/{params.folder_train}.npy", np.array((train_list_loss, valid_list_loss)))
-torch.save(best_state, f"{output_state}/{params.folder_train}.pth")   
+np.save(f"{output_loss}/{folder_train}.npy", np.array((train_list_loss, valid_list_loss)))
+torch.save(best_state, f"{output_state}/{folder_train}.pth")   
