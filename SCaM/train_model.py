@@ -18,11 +18,13 @@ print(f"Utilisation de l'appareil : {device}")
 # find folders train & valid with sys argv
 folder_train = None
 folder_valid = None
+num_epochs = params.num_epochs
 
 for argv in sys.argv[1:]:
 
     if argv[:6] == "train=" : folder_train = argv[6:]
     if argv[:6] == "valid=" : folder_valid = argv[6:]
+    if argv[:6] == "epoch=" : num_epochs = int(argv[6:])
 
 # Define train folder
 if folder_train is None:
@@ -37,7 +39,6 @@ if folder_valid is None:
 # Hyperparamètres
 batch_size = params.batch_size
 learning_rate = params.lr_init
-num_epochs = params.num_epochs
 name = params.name
 
 # Chemins des dossiers de données

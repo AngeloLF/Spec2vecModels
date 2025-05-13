@@ -118,11 +118,13 @@ if __name__ == "__main__":
     # find folders train & valid with sys argv
     folder_train = None
     folder_valid = None
+    num_epochs = args.num_epochs
 
     for argv in sys.argv[1:]:
 
         if argv[:6] == "train=" : folder_train = argv[6:]
         if argv[:6] == "valid=" : folder_valid = argv[6:]
+        if argv[:6] == "epoch=" : num_epochs = int(argv[6:])
 
     # Define train folder
     if folder_train is None:
@@ -237,7 +239,7 @@ if __name__ == "__main__":
     best_test_loss = np.inf
     best_state = None
     
-    for epoch in range(args.num_epochs):
+    for epoch in range(num_epochs):
 
         # training
         train_loss = train(args, model, criterion, train_loader, optimizer, epoch)
