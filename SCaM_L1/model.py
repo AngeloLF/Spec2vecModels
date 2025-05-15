@@ -32,7 +32,7 @@ class SCaM_Model(nn.Module):
     
     def __init__(self):
 
-        self.nameOfThisModel = "SCaM"
+        self.nameOfThisModel = "SCaM_L1"
 
         super(SCaM_Model, self).__init__()
         # CNN pour extraire les caractéristiques de l'image 1x128x1024
