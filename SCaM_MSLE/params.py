@@ -5,7 +5,7 @@ def __getattr__(name):
     if name in locals() : return locals()[name]
     else : raise ValueError(f"params (of SCaM) dont have {name=}.")
 
-name = "SCaM"
+name = "SCaM_MSLE"
 
 path = "./results/output_simu"
 folder_image = "image"
