@@ -39,7 +39,7 @@ if folder_valid is None:
 # Hyperparamètres
 batch_size = params.batch_size
 learning_rate = params.lr_init
-name = params.name
+name = SCaM_Model.nameOfThisModel
 
 # Chemins des dossiers de données
 path = params.path
@@ -80,8 +80,9 @@ valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=True)
 
 # Initialiser le modèle, la fonction de perte et l'optimiseur
 model = SCaM_Model().to(device)
-criterion = nn.HuberLoss(delta=0.1)  # On teste avec la HuberLoss
-optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+criterion = nn.MSELoss()
+ridge = params.ridge # Coef L2 regu
+optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=ridge)
 
 train_list_loss = np.zeros(num_epochs)
 valid_list_loss = np.zeros(num_epochs)
@@ -108,6 +109,7 @@ for epoch in range(num_epochs):
         optimizer.zero_grad()
         outputs = model(images)
         loss = criterion(outputs, spectra)
+
         loss.backward()
         optimizer.step()
         train_loss += loss.item() * images.size(0)

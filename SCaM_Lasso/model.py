@@ -34,7 +34,7 @@ class SCaM_Model(nn.Module):
     SCaM Model : Simple CNN and MLP
     """
 
-    nameOfThisModel = "SCaM"
+    nameOfThisModel = "SCaM_Lasso"
     
     def __init__(self):
 

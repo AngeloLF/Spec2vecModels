@@ -39,7 +39,7 @@ if folder_valid is None:
 # Hyperparamètres
 batch_size = params.batch_size
 learning_rate = params.lr_init
-name = params.name
+name = SCaM_Model.nameOfThisModel
 
 # Chemins des dossiers de données
 path = params.path

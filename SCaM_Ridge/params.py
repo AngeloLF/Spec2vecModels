@@ -5,8 +5,6 @@ def __getattr__(name):
     if name in locals() : return locals()[name]
     else : raise ValueError(f"params (of SCaM) dont have {name=}.")
 
-name = "SCaM_L1"
-
 path = "./results/output_simu"
 folder_image = "image"
 folder_spectrum = "spectrum"
@@ -19,8 +17,10 @@ out_epoch = "epoch"
 
 seed = 42
 num_workers = 4
-lr_init = 0.001
+lr_init = 1e-4
 batch_size = 64
 num_epochs = 2
-# lr_decay = 0.1
 n_bins = 800
+
+lasso = 1e-3
+ridge = 1e-3

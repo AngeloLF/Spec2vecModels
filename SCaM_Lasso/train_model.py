@@ -39,7 +39,7 @@ if folder_valid is None:
 # Hyperparamètres
 batch_size = params.batch_size
 learning_rate = params.lr_init
-name = params.name
+name = SCaM_Model.nameOfThisModel
 
 # Chemins des dossiers de données
 path = params.path
@@ -80,8 +80,9 @@ valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=True)
 
 # Initialiser le modèle, la fonction de perte et l'optimiseur
 model = SCaM_Model().to(device)
-criterion = nn.L1Loss()  # On teste avec la L1
+criterion = nn.MSELoss()
 optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+lasso = params.lasso # Coef L1 regu
 
 train_list_loss = np.zeros(num_epochs)
 valid_list_loss = np.zeros(num_epochs)
@@ -108,6 +109,14 @@ for epoch in range(num_epochs):
         optimizer.zero_grad()
         outputs = model(images)
         loss = criterion(outputs, spectra)
+
+        # Ajout lasso
+        lasso_penalty = torch.tensor(0., requires_grad=True)
+        for param in model.parameters():
+            lasso_penalty = lasso_penalty + torch.abs(param).sum()
+        loss += lasso * lasso_penalty
+
+
         loss.backward()
         optimizer.step()
         train_loss += loss.item() * images.size(0)
