@@ -20,5 +20,4 @@ num_workers = 4
 lr_init = 0.001
 batch_size = 64
 num_epochs = 2
-# lr_decay = 0.1
 n_bins = 800

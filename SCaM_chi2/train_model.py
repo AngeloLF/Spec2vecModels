@@ -1,4 +1,4 @@
-from model import SCaM_Model, SCaM_Dataset
+from model import SCaM_Model, SCaM_Dataset, Chi2Loss
 import params
 import torch
 import torch.nn as nn
@@ -19,12 +19,14 @@ print(f"Utilisation de l'appareil : {device}")
 folder_train = None
 folder_valid = None
 num_epochs = params.num_epochs
+learning_rate = params.lr_init
 
 for argv in sys.argv[1:]:
 
     if argv[:6] == "train=" : folder_train = argv[6:]
     if argv[:6] == "valid=" : folder_valid = argv[6:]
     if argv[:6] == "epoch=" : num_epochs = int(argv[6:])
+    if argv[:3] == "lr="    : learning_rate = float(argv[3:])
 
 # Define train folder
 if folder_train is None:
@@ -38,7 +40,6 @@ if folder_valid is None:
 
 # Hyperparamètres
 batch_size = params.batch_size
-learning_rate = params.lr_init
 name = SCaM_Model.nameOfThisModel
 
 # Chemins des dossiers de données
@@ -57,6 +58,7 @@ full_out_path = f"{params.out_path}/{params.out_dir}/{name}"
 output_loss  = f"{full_out_path}/{params.out_loss}"
 output_state = f"{full_out_path}/{params.out_states}"
 output_epoch = f"{full_out_path}/{params.out_epoch}"
+
 
 # if params.out_path not in os.listdir() : os.mkdir(params.out_path)
 if params.out_dir not in os.listdir(params.out_path) : os.mkdir(f"{params.out_path}/{params.out_dir}")
@@ -80,7 +82,7 @@ valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=True)
 
 # Initialiser le modèle, la fonction de perte et l'optimiseur
 model = SCaM_Model().to(device)
-criterion = nn.MSELoss()  # Mean Squared Error pour la régression du spectre
+func_loss = Chi2Loss(params.Csigma, params.n_bins)
 optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
 train_list_loss = np.zeros(num_epochs)
@@ -89,11 +91,10 @@ valid_list_loss = np.zeros(num_epochs)
 best_val_loss = np.inf
 best_state = None
 
-print(
-        "number of parameters is ",
-        sum(p.numel() for p in model.parameters() if p.requires_grad) // 10**6,
-        "millions",
-    )
+opti_val_loss = np.inf
+optm_state = None
+
+print(f"Number of parameters is {sum(p.numel() for p in model.parameters() if p.requires_grad) // 10**6} millions") 
 
 # Boucle d'entraînement
 for epoch in range(num_epochs):
@@ -107,8 +108,10 @@ for epoch in range(num_epochs):
 
         optimizer.zero_grad()
         outputs = model(images)
-        loss = criterion(outputs, spectra)
+
+        loss = func_loss(outputs, spectra)
         loss.backward()
+
         optimizer.step()
         train_loss += loss.item() * images.size(0)
 
@@ -122,28 +125,30 @@ for epoch in range(num_epochs):
             images = images.to(device)
             spectra = spectra.to(device)
             outputs = model(images)
-            loss = criterion(outputs, spectra)
+            loss = func_loss(outputs, spectra)
             val_loss += loss.item() * images.size(0)
 
     val_loss = val_loss / len(valid_dataset)
     print(f"Epoch [{epoch+1}/{num_epochs}], loss train = {c.g}{train_loss:.6f}{c.d}, val loss = {c.r}{val_loss:.6f}{c.d}")
     with open(f"{output_epoch}/INFO - epoch {epoch+1} - {train_loss:.6f} , {val_loss:.6f}", "wb") as f : pass
 
-    # save state at each epoch to be able to reload and continue the optimization
+    # save the state with the "best" loss
     if val_loss < best_val_loss:
 
         best_val_loss = val_loss
+        best_state = {"epoch": epoch + 1, "model_state_dict": model.state_dict(), "optimizer_state_dict": optimizer.state_dict()}
 
-        best_state = {
-            "epoch": epoch + 1,
-            "model_state_dict": model.state_dict(),
-            "optimizer_state_dict": optimizer.state_dict(),
-        }
+    # In this case of chi2, we want in fact le loss near to 1
+    if np.abs(val_loss - 1) < np.abs(opti_val_loss - 1):
+
+        opti_val_loss = val_loss
+        opti_state = {"epoch": epoch + 1, "model_state_dict": model.state_dict(), "optimizer_state_dict": optimizer.state_dict()}
 
     train_list_loss[epoch] = train_loss
     valid_list_loss[epoch] = val_loss
 
-print("Entraînement terminé.")
 
-np.save(f"{output_loss}/{folder_train}.npy", np.array((train_list_loss, valid_list_loss)))
-torch.save(best_state, f"{output_state}/{folder_train}.pth")   
+print("Saving loss history and states of best models")
+np.save(f"{output_loss}/{folder_train}_{learning_rate:.0e}.npy", np.array((train_list_loss, valid_list_loss)))
+torch.save(best_state, f"{output_state}/{folder_train}_{learning_rate:.0e}_best.pth")
+torch.save(opti_state, f"{output_state}/{folder_train}_{learning_rate:.0e}_opti.pth")
