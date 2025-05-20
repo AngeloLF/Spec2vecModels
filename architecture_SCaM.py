@@ -8,33 +8,12 @@ from tqdm import tqdm
 
 
 
-# Classe pour le Dataset personnalisé
-class SCaM_Dataset(Dataset):
-    def __init__(self, image_dir, spectrum_dir):
-        self.image_files = sorted([os.path.join(image_dir, f) for f in os.listdir(image_dir) if f.endswith(".npy")])
-        self.spectrum_files = sorted([os.path.join(spectrum_dir, f) for f in os.listdir(spectrum_dir) if f.endswith(".npy")])
-
-        # prof si le nombre est différent ....
-        assert len(self.image_files) == len(self.spectrum_files), "Le nombre de fichiers images / spectrums ne correspond pas"
-
-    def __len__(self):
-        return len(self.image_files)
-
-    def __getitem__(self, idx):
-        image = np.load(self.image_files[idx]).astype(np.float32)
-        spectrum = np.load(self.spectrum_files[idx]).astype(np.float32)
-        # add une dimension de canal pour le CNN (1 canal car image en niveaux de gris implicite)
-        image = np.expand_dims(image, axis=0)
-        return torch.tensor(image), torch.tensor(spectrum)
-
 
 
 class SCaM_Model(nn.Module):
     """
     SCaM Model : Simple CNN and MLP
     """
-
-    nameOfThisModel = "SCaM_MSE"
     
     def __init__(self):
 
@@ -72,3 +51,26 @@ class SCaM_Model(nn.Module):
         x = self.relu4(self.fc1(x))
         x = self.fc2(x)
         return x
+
+
+
+
+
+# Classe pour le Dataset personnalisé
+class SCaM_Dataset(Dataset):
+    def __init__(self, image_dir, spectrum_dir):
+        self.image_files = sorted([os.path.join(image_dir, f) for f in os.listdir(image_dir) if f.endswith(".npy")])
+        self.spectrum_files = sorted([os.path.join(spectrum_dir, f) for f in os.listdir(spectrum_dir) if f.endswith(".npy")])
+
+        # prof si le nombre est différent ....
+        assert len(self.image_files) == len(self.spectrum_files), "Le nombre de fichiers images / spectrums ne correspond pas"
+
+    def __len__(self):
+        return len(self.image_files)
+
+    def __getitem__(self, idx):
+        image = np.load(self.image_files[idx]).astype(np.float32)
+        spectrum = np.load(self.spectrum_files[idx]).astype(np.float32)
+        # add une dimension de canal pour le CNN (1 canal car image en niveaux de gris implicite)
+        image = np.expand_dims(image, axis=0)
+        return torch.tensor(image), torch.tensor(spectrum)
