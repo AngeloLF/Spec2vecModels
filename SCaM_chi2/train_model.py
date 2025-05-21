@@ -69,6 +69,7 @@ output_loss  = f"{full_out_path}/{params.out_loss}"
 output_loss_mse = f"{full_out_path}/{params.out_loss_mse}"
 output_loss_chi2 = f"{full_out_path}/{params.out_loss_chi2}"
 output_state = f"{full_out_path}/{params.out_states}"
+output_divers = f"{full_out_path}/{params.out_divers}"
 output_epoch = f"{full_out_path}/{params.out_epoch}"
 output_epoch_here = f"{output_epoch}/{train_name}"
 
@@ -79,7 +80,7 @@ if params.out_epoch not in os.listdir(full_out_path) : os.mkdir(output_epoch)
 if train_name in os.listdir(output_epoch) : shutil.rmtree(output_epoch_here)
 os.mkdir(output_epoch_here)
 
-for f in [params.out_loss, params.out_loss_mse, params.out_loss_chi2, params.out_states]:
+for f in [params.out_loss, params.out_loss_mse, params.out_loss_chi2, params.out_states, params.out_divers]:
     if f not in os.listdir(f"{full_out_path}") : os.mkdir(f"{full_out_path}/{f}")
 
 
@@ -119,6 +120,9 @@ valid_list_loss_mse = np.zeros(num_epochs)
 chi2_loss = Chi2Loss(params.Csigma_chi2, params.n_bins)
 train_list_loss_chi2 = np.zeros(num_epochs)
 valid_list_loss_chi2 = np.zeros(num_epochs)
+
+# Save lr
+lrates = np.zeros(num_epochs)
 
 best_val_loss = np.inf
 best_state = None
@@ -203,7 +207,8 @@ for epoch in range(num_epochs):
     valid_loss = valid_loss / len(valid_dataset)
 
     # Show epoch
-    print(f"Epoch [{epoch+1}/{num_epochs}], loss train = {c.g}{train_loss:.6f}{c.d}, val loss = {c.r}{valid_loss:.6f}{c.d}")
+    lrates[epoch] = optimizer.state_dict()['param_groups'][0]['lr']
+    print(f"Epoch [{epoch+1}/{num_epochs}], loss train = {c.g}{train_loss:.6f}{c.d}, val loss = {c.r}{valid_loss:.6f}{c.d} | LR={c.y}{lrates[epoch]:.2e}{c.d}")
     with open(f"{output_epoch_here}/INFO - epoch {epoch+1} - {train_loss:.6f} , {valid_loss:.6f}", "wb") as f : pass
 
     # save state at each epoch to be able to reload and continue the optimization
@@ -224,5 +229,6 @@ print("Saving loss history and states of best models")
 np.save(f"{output_loss}/{folder_train}_{learning_rate:.0e}.npy", np.array((train_list_loss, valid_list_loss)))
 np.save(f"{output_loss_mse}/{folder_train}_{learning_rate:.0e}.npy", np.array((train_list_loss_mse, valid_list_loss_mse)))
 np.save(f"{output_loss_chi2}/{folder_train}_{learning_rate:.0e}.npy", np.array((train_list_loss_chi2, valid_list_loss_chi2)))
+np.save(f"{output_divers}/lr_{folder_train}_{learning_rate:.0e}.npy", lrates)
 
 torch.save(best_state, f"{output_state}/{folder_train}_{learning_rate:.0e}_best.pth") 
