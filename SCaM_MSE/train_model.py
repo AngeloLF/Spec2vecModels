@@ -56,6 +56,7 @@ path = params.path
 train_simu_name = folder_train
 valid_simu_name = folder_valid
 fold_image, fold_spectrum = params.folder_image, params.folder_spectrum
+train_name = f"{folder_train}_{learning_rate:.0e}"
 
 train_image_dir    = f"{path}/{train_simu_name}/{fold_image}"
 train_spectrum_dir = f"{path}/{train_simu_name}/{fold_spectrum}"
@@ -69,13 +70,16 @@ output_loss_mse = f"{full_out_path}/{params.out_loss_mse}"
 output_loss_chi2 = f"{full_out_path}/{params.out_loss_chi2}"
 output_state = f"{full_out_path}/{params.out_states}"
 output_epoch = f"{full_out_path}/{params.out_epoch}"
+output_epoch_here = f"{output_epoch}/{train_name}"
 
 # if params.out_path not in os.listdir() : os.mkdir(params.out_path)
 if params.out_dir not in os.listdir(params.out_path) : os.mkdir(f"{params.out_path}/{params.out_dir}")
 if name not in os.listdir(f"{params.out_path}/{params.out_dir}") : os.mkdir(full_out_path)
-if params.out_epoch in os.listdir(full_out_path) : shutil.rmtree(f"{full_out_path}/{params.out_epoch}")
+if params.out_epoch not in os.listdir(full_out_path) : os.mkdir(output_epoch)
+if train_name in os.listdir(output_epoch) : shutil.rmtree(output_epoch_here)
+os.mkdir(output_epoch_here)
 
-for f in [params.out_loss, params.out_loss_mse, params.out_loss_chi2, params.out_states, params.out_epoch]:
+for f in [params.out_loss, params.out_loss_mse, params.out_loss_chi2, params.out_states]:
     if f not in os.listdir(f"{full_out_path}") : os.mkdir(f"{full_out_path}/{f}")
 
 
@@ -124,6 +128,8 @@ best_state = None
 
 ### Some print
 print(f"{c.ly}INFO : Utilisation de l'appareil : {device}{c.d}")
+print(f"{c.ly}INFO : Model architecture {name}{c.d}")
+print(f"{c.ly}INFO : Name : {train_name}{c.d}")
 print(f"{c.ly}INFO : Train : {folder_train}{c.d}")
 print(f"{c.ly}INFO : Valid : {folder_valid}{c.d}")
 print(f"{c.ly}INFO : Epoch : {num_epochs}{c.d}")
@@ -198,7 +204,7 @@ for epoch in range(num_epochs):
 
     # Show epoch
     print(f"Epoch [{epoch+1}/{num_epochs}], loss train = {c.g}{train_loss:.6f}{c.d}, val loss = {c.r}{valid_loss:.6f}{c.d}")
-    with open(f"{output_epoch}/INFO - epoch {epoch+1} - {train_loss:.6f} , {valid_loss:.6f}", "wb") as f : pass
+    with open(f"{output_epoch_here}/INFO - epoch {epoch+1} - {train_loss:.6f} , {valid_loss:.6f}", "wb") as f : pass
 
     # save state at each epoch to be able to reload and continue the optimization
     if valid_loss < best_val_loss:
@@ -219,4 +225,4 @@ np.save(f"{output_loss}/{folder_train}_{learning_rate:.0e}.npy", np.array((train
 np.save(f"{output_loss_mse}/{folder_train}_{learning_rate:.0e}.npy", np.array((train_list_loss_mse, valid_list_loss_mse)))
 np.save(f"{output_loss_chi2}/{folder_train}_{learning_rate:.0e}.npy", np.array((train_list_loss_chi2, valid_list_loss_chi2)))
 
-# torch.save(best_state, f"{output_state}/{folder_train}_{learning_rate:.0e}_best.pth") 
+torch.save(best_state, f"{output_state}/{folder_train}_{learning_rate:.0e}_best.pth") 
