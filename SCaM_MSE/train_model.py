@@ -73,7 +73,7 @@ output_divers = f"{full_out_path}/{params.out_divers}"
 output_epoch = f"{full_out_path}/{params.out_epoch}"
 output_epoch_here = f"{output_epoch}/{train_name}"
 
-# if params.out_path not in os.listdir() : os.mkdir(params.out_path)
+# if params.out_path not in os.listdir() : os.mkdir(params.out_path) +++os.makedirs(f"fold", exist_ok=True)
 if params.out_dir not in os.listdir(params.out_path) : os.mkdir(f"{params.out_path}/{params.out_dir}")
 if name not in os.listdir(f"{params.out_path}/{params.out_dir}") : os.mkdir(full_out_path)
 if params.out_epoch not in os.listdir(full_out_path) : os.mkdir(output_epoch)
