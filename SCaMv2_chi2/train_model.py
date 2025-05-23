@@ -11,7 +11,7 @@ from torch.utils.data import Dataset, DataLoader
 sys.path.append('./Spec2vecModels/')
 import params
 from losses import Chi2Loss
-from architecture_SCaM import SCaMv2_Model, SCaMv2_Dataset as Current_Model, Current_Dataset
+from architecture_SCaMv2 import SCaMv2_Model, SCaMv2_Dataset as Current_Model, Current_Dataset
 
 
 

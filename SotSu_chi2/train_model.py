@@ -81,7 +81,7 @@ if train_name in os.listdir(output_epoch) : shutil.rmtree(output_epoch_here)
 os.mkdir(output_epoch_here)
 
 for f in [params.out_loss, params.out_loss_mse, params.out_loss_chi2, params.out_states, params.out_divers]:
-    if f not in os.listdir(f"{full_out_path}") : os.mkdir(f"{full_out_path}/{f}")
+    os.makedirs(f"{full_out_path}/{f}", exist_ok=True)
 
 
 
