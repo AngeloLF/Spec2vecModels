@@ -11,7 +11,7 @@ from torch.utils.data import Dataset, DataLoader
 sys.path.append('./Spec2vecModels/')
 import params
 from losses import Chi2Loss
-from architecture_SCaM import SCaM_Model, SCaM_Dataset
+from architecture_SCaM import SCaM_Model, SCaM_Dataset as Current_Model, Current_Dataset
 
 
 
@@ -89,8 +89,8 @@ for f in [params.out_loss, params.out_loss_mse, params.out_loss_chi2, params.out
 ### Data set loading
 
 # Créer le Dataset complet
-train_dataset = SCaM_Dataset(train_image_dir, train_spectrum_dir)
-valid_dataset = SCaM_Dataset(valid_image_dir, valid_spectrum_dir)
+train_dataset = Current_Dataset(train_image_dir, train_spectrum_dir)
+valid_dataset = Current_Dataset(valid_image_dir, valid_spectrum_dir)
 
 # Créer les DataLoaders pour l'entraînement et la validation
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
@@ -99,7 +99,7 @@ valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=True)
 
 ### Initialiser le modèle, la fonction de perte et l'optimiseur
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = SCaM_Model().to(device)
+model = Current_Model().to(device)
 optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
 

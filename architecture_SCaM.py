@@ -41,7 +41,7 @@ class SCaM_Model(nn.Module):
         # MLP
         self.fc1 = nn.Linear(64 * 16 * 128, 1024) # 131072 -> 1024
         self.relu4 = nn.ReLU()
-        self.fc2 = nn.Linear(1024, 800)           # 131072 -> 800
+        self.fc2 = nn.Linear(1024, 800)           # 1024 -> 800
 
     def forward(self, x):
         x = self.pool1(self.relu1(self.conv1(x)))
