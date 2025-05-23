@@ -14,10 +14,14 @@ class SCaM_Model(nn.Module):
     """
     SCaM Model : Simple CNN and MLP
     """
+
+    folder_input = "image"
+    folder_output = "spectrum"
     
     def __init__(self):
 
         super(SCaM_Model, self).__init__()
+
         # Image d'entrée : 1x128x1024
         
         # 1ere convolution CNN

@@ -3,11 +3,9 @@
 def __getattr__(name):
 
     if name in locals() : return locals()[name]
-    else : raise ValueError(f"params (of SCaM) dont have {name=}.")
+    else : raise ValueError(f"params (of Spec2vecModels) dont have {name=}.")
 
 path = "./results/output_simu"
-folder_image = "image"
-folder_spectrum = "spectrum"
 
 out_path = "./results"
 out_dir = "Spec2vecModels_Results"

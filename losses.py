@@ -1,5 +1,19 @@
+import sys
 import torch
 import torch.nn as nn
+
+sys.path.append('./Spec2vecModels/')
+import params
+
+
+
+def give_Loss_Function(loss_name):
+
+    if   loss_name.lower() == "chi2" : return Chi2Loss(params.Csigma_chi2, params.n_bins)
+    elif loss_name.lower() == "mse" : return nn.MSELoss()
+    else: 
+        print(f"{c.r}WARNING : loss name {loss_name} unknow{c.d}")
+        raise ValueError("Loss name unknow")
 
 
 

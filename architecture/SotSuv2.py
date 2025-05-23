@@ -9,14 +9,19 @@ from tqdm import tqdm
 
 
 
-class SCaMv2_Model(nn.Module):
+
+class SotSuv2_Model(nn.Module):
     """
     SCaM Model : Simple CNN and MLP
     """
+
+    folder_input = "image"
+    folder_output = "spectrum"
     
     def __init__(self):
 
-        super(SCaMv2_Model, self).__init__()
+        super(SotSuv2_Model, self).__init__()
+        
         # Image d'entrée : 1x128x1024
         
         # 1ere convolution CNN
@@ -34,20 +39,26 @@ class SCaMv2_Model(nn.Module):
         self.relu3 = nn.ReLU()
         self.pool3 = nn.MaxPool2d(kernel_size=(2, 2), stride=(2, 2))       # -> 64x16x128
 
+        # 4eme convolution CNN
+        self.conv4 = nn.Conv2d(64, 128, kernel_size=(3, 3), padding=(1, 1))# -> 128x16x128
+        self.relu4 = nn.ReLU()
+        self.pool4 = nn.MaxPool2d(kernel_size=(2, 2), stride=(2, 2))       # -> 128x8x64
+
         # On applatit les dernier filtre
-        self.flatten = nn.Flatten() # -> 131072
+        self.flatten = nn.Flatten() # -> 65536
 
         # MLP
-        self.fc1 = nn.Linear(64 * 16 * 128, 2048) # 131072 -> 2048
+        self.fc1 = nn.Linear(128*8*64, 4096) # 65536 -> 4096
         self.relu_fc1 = nn.ReLU()
-        self.fc2 = nn.Linear(2048, 1024)          # 2048 -> 1024
+        self.fc2 = nn.Linear(4096, 1024)     #  4096 -> 1024
         self.relu_fc2 = nn.ReLU()
-        self.fc3 = nn.Linear(1024, 800)           # 1024 -> 800
+        self.fc3 = nn.Linear(1024, 800)      #  1024 -> 800
 
     def forward(self, x):
         x = self.pool1(self.relu1(self.conv1(x)))
         x = self.pool2(self.relu2(self.conv2(x)))
         x = self.pool3(self.relu3(self.conv3(x)))
+        x = self.pool4(self.relu4(self.conv4(x)))
         x = self.flatten(x)
         x = self.relu_fc1(self.fc1(x))
         x = self.relu_fc2(self.fc2(x))
@@ -59,7 +70,7 @@ class SCaMv2_Model(nn.Module):
 
 
 # Classe pour le Dataset personnalisé
-class SCaMv2_Dataset(Dataset):
+class SotSuv2_Dataset(Dataset):
     def __init__(self, image_dir, spectrum_dir):
         self.image_files = sorted([os.path.join(image_dir, f) for f in os.listdir(image_dir) if f.endswith(".npy")])
         self.spectrum_files = sorted([os.path.join(spectrum_dir, f) for f in os.listdir(spectrum_dir) if f.endswith(".npy")])
