@@ -31,9 +31,13 @@ if __name__ == "__main__":
         if argv[:6] == "model=" : model_name = argv[6:]
         if argv[:6] == "train=" : folder_train = argv[6:]
         if argv[:6] == "valid=" : folder_valid = argv[6:]
+        if argv[:2] == "e="     : num_epochs = int(argv[2:])
         if argv[:6] == "epoch=" : num_epochs = int(argv[6:])
         if argv[:3] == "lr="    : learning_rate = float(argv[3:])
         if argv[:5] == "loss="  : loss_name = argv[5:]
+
+    if folder_train[:5] != "train" : folder_train = f"train{folder_train}"
+    if folder_valid[:5] != "valid" : folder_valid = f"valid{folder_valid}"
 
 
 
