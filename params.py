@@ -13,7 +13,6 @@ out_loss = "loss"
 out_loss_mse = "loss_mse"
 out_loss_chi2 = "loss_chi2"
 out_states = "states"
-out_prestates = "pre_states" 
 out_epoch = "epoch"
 out_divers = "divers"
 

@@ -9,8 +9,9 @@ import params
 
 def give_Loss_Function(loss_name):
 
-    if   loss_name.lower() == "chi2" : return Chi2Loss(params.Csigma_chi2, params.n_bins)
-    elif loss_name.lower() == "mse" : return nn.MSELoss()
+    if   loss_name == "chi2" : return Chi2Loss(params.Csigma_chi2, params.n_bins)
+    elif loss_name == "MSE" : return nn.MSELoss()
+    elif loss_name == "L1N" : return L1NLoss()
     else: 
         print(f"{c.r}WARNING : loss name {loss_name} unknow{c.d}")
         raise ValueError("Loss name unknow")
@@ -29,3 +30,13 @@ class Chi2Loss(nn.Module):
         deno = y_true + self.C2
         loss = torch.sum(nume / deno) / self.norma
         return loss
+
+
+
+class L1NLoss(nn.Module):
+
+    def __init__(self):
+        super(L1NLoss, self).__init__()
+
+    def forward(self, y_pred, y_true):
+        return torch.sum(torch.abs(y_true-y_pred)) / torch.sum(y_true)

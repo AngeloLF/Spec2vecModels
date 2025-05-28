@@ -19,11 +19,9 @@ from losses import give_Loss_Function, Chi2Loss
 
 def load_from_pretrained(model_name, loss_name, folder_pretrain, prelr, device, is_pret=False):
 
-    prefixe = "" if not is_pret else "pre_"
-
     model, Custom_dataloader = load_model(model_name, device)
 
-    MODEL_W = f"{params.out_path}/{params.out_dir}/{model_name}_{loss_name}/{prefixe}{params.out_states}/{prefixe}{folder_pretrain}_{prelr}_best.pth"
+    MODEL_W = f"{params.out_path}/{params.out_dir}/{model_name}_{loss_name}/{params.out_states}/{folder_pretrain}_{prelr}_best.pth"
     print(f"{c.ly}INFO : Loading {model_name} with w. : {c.tu}{MODEL_W}{c.ru} ... {c.d}")
 
     state = torch.load(MODEL_W, map_location=device)
@@ -60,6 +58,17 @@ def load_model(model_name, device, path2architecture='./Spec2vecModels/'):
 
 
 
+def load_model_from_Args(args):
+
+    device = get_device(Args)
+
+    if Args.from_pre:
+        model, Custom_dataloader = load_from_pretrained(Args.model, Args.loss, Args.pre_train, Args.pre_lr_str, device)
+    else: 
+        model, Custom_dataloader = load_model(Args.model, device)
+
+    return model, Custom_dataloader, device
+
 
 
 
@@ -69,21 +78,11 @@ if __name__ == "__main__":
     ### capture params
     Args = get_argv(sys.argv[1:], prog="training")
 
-
-
-
-
     ### Define some params
     name = f"{Args.model}_{Args.loss}" # Ex. : SCaM_chi2
     batch_size = params.batch_size
     loss_function = give_Loss_Function(Args.loss)
-    device = get_device(Args)
-
-    if Args.from_pre:
-        model, Custom_dataloader = load_from_pretrained(Args.model, Args.loss, Args.pre_train, Args.pre_lr, device, is_pret=True)
-    else: 
-        model, Custom_dataloader = load_model(Args.model, device)
-    
+    model, Custom_dataloader, device = load_model_from_Args(Args)
     optimizer = optim.Adam(model.parameters(), lr=Args.lr)
 
 
@@ -92,7 +91,7 @@ if __name__ == "__main__":
 
     ### Definition of paths
     path = params.path                                             # Ex. : ./results/output_simu
-    train_name = f"{Args.prefixe}{Args.train}_{Args.lr_str}"       # Ex. : (pre_)train16k_1e-04
+    train_name = f"{Args.from_prefixe}{Args.train}_{Args.lr_str}"       # Ex. : (pre_)(trainCalib_1e-4_)train16k_1e-04
     full_out_path = f"{params.out_path}/{params.out_dir}/{name}"   # Ex. : ./results/Spec2vecModels_Results/SCaM_chi2
 
     train_inp_dir = f"{path}/{Args.train}/{model.folder_input}"    # Ex. : ./results/output_simu/train16k/image
@@ -105,13 +104,12 @@ if __name__ == "__main__":
     output_loss_mse   = f"{full_out_path}/{params.out_loss_mse}"   # Ex. : ./results/Spec2vecModels_Results/SCaM_chi2/loss_mse
     output_loss_chi2  = f"{full_out_path}/{params.out_loss_chi2}"  # Ex. : ./results/Spec2vecModels_Results/SCaM_chi2/loss_chi2
     output_state      = f"{full_out_path}/{params.out_states}"     # Ex. : ./results/Spec2vecModels_Results/SCaM_chi2/states
-    output_prestate   = f"{full_out_path}/{params.out_prestates}"  # Ex. : ./results/Spec2vecModels_Results/SCaM_chi2/pre_states
     output_divers     = f"{full_out_path}/{params.out_divers}"     # Ex. : ./results/Spec2vecModels_Results/SCaM_chi2/divers
 
     # Create folder in case ...
     os.makedirs(f"{params.out_path}/{params.out_dir}", exist_ok=True) # Ex. : ./results/Spec2vecModels_Results
     os.makedirs(full_out_path, exist_ok=True)                         # Ex. : ./results/Spec2vecModels_Results/SCaM_chi2
-    for f in [output_loss, output_loss_mse, output_loss_chi2, output_state, output_prestate, output_divers] : os.makedirs(f, exist_ok=True)
+    for f in [output_loss, output_loss_mse, output_loss_chi2, output_state, output_divers] : os.makedirs(f, exist_ok=True)
 
     # Folder for push epoch
     output_epoch      = f"{full_out_path}/{params.out_epoch}"      # Ex. : ./results/Spec2vecModels_Results/SCaM_chi2/epoch
@@ -208,8 +206,8 @@ if __name__ == "__main__":
             train_loss_mse += mse_loss(outputs, spectra) * images.size(0)
             train_loss_chi2 += chi2_loss(outputs, spectra) * images.size(0)
 
-
-        train_list_loss[epoch] = train_loss / len(train_dataset)
+        train_loss = train_loss / len(train_dataset)
+        train_list_loss[epoch] = train_loss
         train_list_loss_mse[epoch] = train_loss_mse / len(train_dataset)
         train_list_loss_chi2[epoch] = train_loss_chi2 / len(train_dataset)
 
@@ -265,6 +263,5 @@ if __name__ == "__main__":
     np.save(f"{output_loss_chi2}/{train_name}.npy", np.array((train_list_loss_chi2, valid_list_loss_chi2)))
     np.save(f"{output_divers}/lr_{train_name}.npy", lrates)
 
-    if Args.save and Args.is_pret : torch.save(best_state, f"{output_prestate}/{train_name}_best.pth") 
-    elif Args.save                : torch.save(best_state, f"{output_state}/{train_name}_best.pth") 
+    if Args.save : torch.save(best_state, f"{output_state}/{train_name}_best.pth")
 
