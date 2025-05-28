@@ -241,7 +241,7 @@ if __name__ == "__main__":
         # Show epoch
         lrates[epoch] = optimizer.state_dict()['param_groups'][0]['lr']
         print(f"Epoch [{epoch+1}/{Args.epochs}], loss train = {c.g}{train_loss:.6f}{c.d}, val loss = {c.r}{valid_loss:.6f}{c.d} | LR={c.y}{lrates[epoch]:.2e}{c.d}")
-        with open(f"{output_epoch_here}/INFO - epoch {epoch+1} - {train_loss:.6f} , {valid_loss:.6f}", "wb") as f : pass
+        with open(f"{output_epoch_here}/INFO - epoch {epoch+1} / {Args.epochs} - {train_loss:.6f} , {valid_loss:.6f}", "wb") as f : pass
 
         # save state at each epoch to be able to reload and continue the optimization
         if valid_loss < best_val_loss:
