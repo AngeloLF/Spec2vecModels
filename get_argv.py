@@ -6,6 +6,7 @@ import torch
 
 def get_argv(argv, prog=None, correction=True, show=False):
 
+
     Args = SimpleNamespace()
     Args.save = True
     Args.from_pre, Args.from_prefixe = False, ""
@@ -28,6 +29,7 @@ def get_argv(argv, prog=None, correction=True, show=False):
         if arg[:6] == "epoch=" : Args.epochs = int(arg[6:])
         if arg[:3] == "lr="    : Args.lr     = float(arg[3:])
         if arg[:3] == "lr="    : Args.lr_str = f"{float(arg[3:]):.0e}"
+        if arg[:6] == "score=" : Args.score  = arg[6:]
         
         if arg == "cpu"        : Args.device = "cpu"
         if arg == "gpu"        : Args.device = "cuda"
@@ -106,10 +108,24 @@ def get_argv(argv, prog=None, correction=True, show=False):
 
 
 
+        if "score" not in dir(Args) and prog in ["analyse"]:
+
+            print(f"{c.r}WARNING : score type is not define (score=<score_type>){c.d}")
+            Errors.append("Score type")
+
+
+
         if len(Errors) > 0:
             all_errors = ", ".join(Errors)
             raise Exception(f"{all_errors} not defines")
 
+
+
+    if prog in ["training", "apply", "analyse"]:
+
+        Args.model_loss = f"{Args.model}_{Args.loss}"
+        Args.fulltrain_str = f"{Args.from_prefixe}{Args.train}"
+        Args.fullname = f"{Args.model}_{Args.loss}_{Args.fulltrain_str}_{Args.lr_str}"
 
 
     if show : show_Args(Args)
