@@ -9,6 +9,8 @@ def get_argv(argv, prog=None, correction=True, show=False):
 
     Args = SimpleNamespace()
     Args.save = True
+    Args.show = False
+    Args.aug_smooth = False
     Args.from_pre, Args.from_prefixe = False, ""
     Args.pre_train, Args.pre_lr, Args.pre_lr_str = None, None, None
 
@@ -30,12 +32,18 @@ def get_argv(argv, prog=None, correction=True, show=False):
         if arg[:3] == "lr="    : Args.lr     = float(arg[3:])
         if arg[:3] == "lr="    : Args.lr_str = f"{float(arg[3:]):.0e}"
         if arg[:6] == "score=" : Args.score  = arg[6:]
+
+        if arg[:6] == "image=" : Args.image = arg[6:]
+        if arg[:2] == "n="     : Args.n     = int(arg[2:])
+        if arg[:5] == "mode="  : Args.mode  = arg[5:]
         
         if arg == "cpu"        : Args.device = "cpu"
         if arg == "gpu"        : Args.device = "cuda"
         if arg == "cuda"       : Args.device = "cuda"
 
+        if arg == "show"       : Args.show = True
         if arg == "nosave"     : Args.save = False
+        if arg == "aug_smooth" or arg == "augs" : Args.aug_smooth = True
 
         if arg[:5] == "load="  : # <folder_pretrain>_<prelr>
             load_pret = arg[5:] 
@@ -53,21 +61,21 @@ def get_argv(argv, prog=None, correction=True, show=False):
         Errors = list()
 
 
-        if "model" not in dir(Args) and prog in ["training", "apply", "analyse"]:
+        if "model" not in dir(Args) and prog in ["training", "apply", "analyse", "gradcam"]:
 
             print(f"{c.r}WARNING : model architecture is not define (model=<model_architecture>){c.d}")
             Errors.append("Model architecture")
 
 
 
-        if "loss" not in dir(Args) and prog in ["training", "apply", "analyse"]:
+        if "loss" not in dir(Args) and prog in ["training", "apply", "analyse", "gradcam"]:
 
             print(f"{c.r}WARNING : loss function is not define (loss=<loss_function>){c.d}")
             Errors.append("Loss function")
 
 
 
-        if "train" not in dir(Args) and prog in ["training", "apply", "analyse"]:
+        if "train" not in dir(Args) and prog in ["training", "apply", "analyse", "gradcam"]:
 
             print(f"{c.r}WARNING : train folder is not define (train=<train_folder>){c.d}")
             Errors.append("Train folder")
@@ -85,7 +93,7 @@ def get_argv(argv, prog=None, correction=True, show=False):
 
 
 
-        if "test" not in dir(Args) and prog in ["apply", "analyse"]:
+        if "test" not in dir(Args) and prog in ["apply", "analyse", "gradcam"]:
 
             print(f"{c.r}WARNING : test folder is not define (test=<test_folder>){c.d}")
             Errors.append("Test folder") # raise Exception("test folder is not define")
@@ -101,7 +109,7 @@ def get_argv(argv, prog=None, correction=True, show=False):
 
 
 
-        if "lr" not in dir(Args) and prog in ["training", "apply", "analyse"]:
+        if "lr" not in dir(Args) and prog in ["training", "apply", "analyse", "gradcam"]:
 
             print(f"{c.r}WARNING : learning rate is not define (lr=<learning_rate>){c.d}")
             Errors.append("Learning rate") # raise Exception("Learning rate is not define")
@@ -115,13 +123,34 @@ def get_argv(argv, prog=None, correction=True, show=False):
 
 
 
+        if "image" not in dir(Args) and prog in ["gradcam"]:
+
+            print(f"{c.r}WARNING : image is not define (image=<image>){c.d}")
+            Errors.append("Image")
+
+
+
+        if "n" not in dir(Args) and prog in ["gradcam"]:
+
+            print(f"{c.r}WARNING : n is not define (n=<n>){c.d}")
+            Errors.append("n")
+
+
+
+        if "mode" not in dir(Args) and prog in ["gradcam"]:
+
+            print(f"{c.r}WARNING : mode is not define (mode=<mode>){c.d}")
+            Errors.append("Mode")
+
+
+
         if len(Errors) > 0:
             all_errors = ", ".join(Errors)
             raise Exception(f"{all_errors} not defines")
 
 
 
-    if prog in ["training", "apply", "analyse"]:
+    if prog in ["training", "apply", "analyse", "gradcam"]:
 
         Args.model_loss = f"{Args.model}_{Args.loss}"
         Args.fulltrain_str = f"{Args.from_prefixe}{Args.train}"
