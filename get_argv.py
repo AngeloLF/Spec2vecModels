@@ -47,12 +47,13 @@ def get_argv(argv, prog=None, correction=True, show=False):
 
         if arg[:5] == "load="  : # <folder_pretrain>_<prelr>
             load_pret = arg[5:] 
-            pre_train, pre_lr = load_pret.split("_")
-            Args.from_pre = True
-            Args.pre_train = pre_train if pre_train[:5] == "train" else f"train{pre_train}"
-            Args.pre_lr = float(pre_lr)
-            Args.pre_lr_str = f"{float(pre_lr):.0e}"
-            Args.from_prefixe = f"{Args.pre_train}_{Args.pre_lr_str}_"
+            if load_pret != "None":
+                pre_train, pre_lr = load_pret.split("_")
+                Args.from_pre = True
+                Args.pre_train = pre_train if pre_train[:5] == "train" else f"train{pre_train}"
+                Args.pre_lr = float(pre_lr)
+                Args.pre_lr_str = f"{float(pre_lr):.0e}"
+                Args.from_prefixe = f"{Args.pre_train}_{Args.pre_lr_str}_"
 
 
     
