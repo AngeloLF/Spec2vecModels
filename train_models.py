@@ -80,7 +80,7 @@ if __name__ == "__main__":
 
     ### Define some params
     name = f"{Args.model}_{Args.loss}" # Ex. : SCaM_chi2
-    batch_size = params.batch_size
+    batch_size = params.batch_size_def if Args.model not in params.batch_size_models.keys() else param.batch_size_models[Args.model]
     loss_function = give_Loss_Function(Args.loss)
     model, Custom_dataloader, device = load_model_from_Args(Args)
     optimizer = optim.Adam(model.parameters(), lr=Args.lr)
@@ -170,6 +170,7 @@ if __name__ == "__main__":
     print(f"{c.ly}INFO : Valid : {Args.valid}{c.d}")
     print(f"{c.ly}INFO : Epoch : {Args.epochs}{c.d}")
     print(f"{c.ly}INFO : Lrate : {Args.lr}{c.d}")
+    print(f"{c.ly}INFO : batch size : {batch_size}{c.d}")
     print(f"{c.ly}INFO : Number of parameters : {sum(p.numel() for p in model.parameters() if p.requires_grad) // 10**6} millions{c.d}")
 
 

@@ -19,7 +19,11 @@ out_divers = "divers"
 seed = 42
 num_workers = 4
 lr_default = 0.001
-batch_size = 64
 num_epochs = 2
 n_bins = 800
 Csigma_chi2 = 12.
+
+batch_size_def = 64
+batch_size_models = {
+    "ViTESoS" : 4,
+}
