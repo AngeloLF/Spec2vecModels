@@ -36,6 +36,8 @@ def get_argv(argv, prog=None, correction=True, show=False):
         if arg[:6] == "image=" : Args.image = arg[6:]
         if arg[:2] == "n="     : Args.n     = int(arg[2:])
         if arg[:5] == "mode="  : Args.mode  = arg[5:]
+
+        if arg[:5] == "spec="  : Args.spec  = arg[5:]
         
         if arg == "cpu"        : Args.device = "cpu"
         if arg == "gpu"        : Args.device = "cuda"
@@ -62,21 +64,21 @@ def get_argv(argv, prog=None, correction=True, show=False):
         Errors = list()
 
 
-        if "model" not in dir(Args) and prog in ["training", "apply", "analyse", "gradcam"]:
+        if "model" not in dir(Args) and prog in ["training", "apply", "analyse", "gradcam", "residus"]:
 
             print(f"{c.r}WARNING : model architecture is not define (model=<model_architecture>){c.d}")
             Errors.append("Model architecture")
 
 
 
-        if "loss" not in dir(Args) and prog in ["training", "apply", "analyse", "gradcam"]:
+        if "loss" not in dir(Args) and prog in ["training", "apply", "analyse", "gradcam", "residus"]:
 
             print(f"{c.r}WARNING : loss function is not define (loss=<loss_function>){c.d}")
             Errors.append("Loss function")
 
 
 
-        if "train" not in dir(Args) and prog in ["training", "apply", "analyse", "gradcam"]:
+        if "train" not in dir(Args) and prog in ["training", "apply", "analyse", "gradcam", "residus"]:
 
             print(f"{c.r}WARNING : train folder is not define (train=<train_folder>){c.d}")
             Errors.append("Train folder")
@@ -94,7 +96,7 @@ def get_argv(argv, prog=None, correction=True, show=False):
 
 
 
-        if "test" not in dir(Args) and prog in ["apply", "analyse", "gradcam"]:
+        if "test" not in dir(Args) and prog in ["apply", "analyse", "gradcam", "residus"]:
 
             print(f"{c.r}WARNING : test folder is not define (test=<test_folder>){c.d}")
             Errors.append("Test folder") # raise Exception("test folder is not define")
@@ -110,7 +112,7 @@ def get_argv(argv, prog=None, correction=True, show=False):
 
 
 
-        if "lr" not in dir(Args) and prog in ["training", "apply", "analyse", "gradcam"]:
+        if "lr" not in dir(Args) and prog in ["training", "apply", "analyse", "gradcam", "residus"]:
 
             print(f"{c.r}WARNING : learning rate is not define (lr=<learning_rate>){c.d}")
             Errors.append("Learning rate") # raise Exception("Learning rate is not define")
@@ -128,6 +130,13 @@ def get_argv(argv, prog=None, correction=True, show=False):
 
             print(f"{c.r}WARNING : image is not define (image=<image>){c.d}")
             Errors.append("Image")
+
+
+
+        if "spec" not in dir(Args) and prog in ["residus"]:
+
+            print(f"{c.r}WARNING : spectrum is not define (spec=<spectrum>){c.d}")
+            Errors.append("Spectrum")
 
 
 
@@ -151,7 +160,7 @@ def get_argv(argv, prog=None, correction=True, show=False):
 
 
 
-    if prog in ["training", "apply", "analyse", "gradcam"]:
+    if prog in ["training", "apply", "analyse", "gradcam", "residus"]:
 
         Args.model_loss = f"{Args.model}_{Args.loss}"
         Args.fulltrain_str = f"{Args.from_prefixe}{Args.train}"
