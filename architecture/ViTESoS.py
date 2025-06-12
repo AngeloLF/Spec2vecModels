@@ -5,7 +5,8 @@ import os, sys, shutil
 import matplotlib.pyplot as plt
 import torch.nn as nn
 from einops import rearrange
-import math
+# import math
+import coloralf as c
 
 
 
@@ -65,7 +66,7 @@ class MultiHeadSelfAttention(nn.Module):
         self.values = nn.Linear(emb_size, emb_size)
         self.fc_out = nn.Linear(emb_size, emb_size) # Couche de sortie après concaténation des têtes
         self.dropout = nn.Dropout(dropout)
-        self.scale = math.sqrt(self.head_dim) # Pour scaler les scores d'attention
+        self.scale = np.sqrt(self.head_dim) # Pour scaler les scores d'attention
 
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -124,12 +125,12 @@ class TransformerBlock(nn.Module):
     Un bloc Transformer composé d'attention multi-tête et d'un MLP.
     """
 
-    def __init__(self, emb_size: int, num_heads: int, ff_hidden_size: int, dropout: float = 0.0):
+    def __init__(self, emb_size: int, num_heads: int, n_hidden: int, dropout: float = 0.0):
         super().__init__()
         self.norm1 = nn.LayerNorm(emb_size) # Normalisation de couche avant l'attention
         self.attn = MultiHeadSelfAttention(emb_size, num_heads, dropout)
         self.norm2 = nn.LayerNorm(emb_size) # Normalisation de couche avant le MLP
-        self.ff = FeedForward(emb_size, ff_hidden_size, dropout)
+        self.ff = FeedForward(emb_size, n_hidden, dropout)
 
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -148,7 +149,7 @@ class VisionTransformerEncoder(nn.Module):
     Encodeur du Vision Transformer.
     """
 
-    def __init__(self, img_size=(128, 1024), in_channels=1, patch_size=(16, 16), emb_size=768, num_heads=8, ff_hidden_size=3072, num_layers=12, dropout=0.0):
+    def __init__(self, img_size=(128, 1024), in_channels=1, patch_size=(16, 16), emb_size=768, num_heads=8, n_hidden=3072, num_layers=12, dropout=0.0):
 
         super().__init__()
         self.patch_embedding = PatchEmbedding(in_channels, patch_size, emb_size, img_size)
@@ -157,7 +158,7 @@ class VisionTransformerEncoder(nn.Module):
         # Ajout d'un terme pour le CLS token si utilisé, mais pas nécessaire pour le débruitage
         self.positional_embedding = nn.Parameter(torch.randn(1, self.patch_embedding.num_patches, emb_size))
         self.dropout = nn.Dropout(dropout)
-        self.transformer_blocks = nn.ModuleList([TransformerBlock(emb_size, num_heads, ff_hidden_size, dropout) for _ in range(num_layers)])
+        self.transformer_blocks = nn.ModuleList([TransformerBlock(emb_size, num_heads, n_hidden, dropout) for _ in range(num_layers)])
 
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -222,7 +223,7 @@ class ViTDecoder(nn.Module):
 
 
 
-class ViTESoS(nn.Module):
+class ViTESoS_Model(nn.Module):
 
     """
     Modèle de Visual Transformers Spectro -> Spectrum
@@ -232,11 +233,25 @@ class ViTESoS(nn.Module):
     folder_input = "image"
     folder_output = "spectro"
 
+    # emb_size   = 768
+    # num_heads  = 8
+    # n_hidden   = 3072
+    # num_layers = 6
 
-    def __init__(self, img_size=(128, 1024), in_channels=1, out_channels=1, patch_size=(16, 16), emb_size=768, num_heads=8, ff_hidden_size=3072, num_layers=6, dropout=0.1):
+    def __init__(self, img_size=(128, 1024), in_channels=1, out_channels=1, patch_size=(16, 16), emb_size=768, num_heads=8, n_hidden=3072, num_layers=6, dropout=0.1):
+
+
+        if "vitesostestparams" in sys.argv:
+            print(f"{c.ly}Using ViTESoS test params ...{c.d}")
+            emb_size=256
+            num_heads=4
+            n_hidden=512
+            num_layers=2 
+
+
         super().__init__()
 
-        self.encoder = VisionTransformerEncoder(img_size, in_channels, patch_size, emb_size, num_heads, ff_hidden_size, num_layers, dropout)
+        self.encoder = VisionTransformerEncoder(img_size, in_channels, patch_size, emb_size, num_heads, n_hidden, num_layers, dropout)
         self.decoder = ViTDecoder(emb_size, patch_size, img_size, out_channels)
 
 
@@ -247,23 +262,32 @@ class ViTESoS(nn.Module):
 
 
 
+    def extraApply(self, pred, pathsave, spectro_name):
+
+        suffixe = spectro_name.split(self.folder_output)[-1]
+
+        spectrumPX = np.sum(pred, axis=0)
+        np.save(f"{pathsave}/spectrumPX{suffixe}", spectrumPX)
 
 
 
-class VitESoSDataset(Dataset):
+
+
+
+class ViTESoS_Dataset(Dataset):
 
     def __init__(self, image_dir, spectro_dir):
         self.image_dir = image_dir
         self.spectro_dir = spectro_dir
         self.input_files = sorted(os.listdir(image_dir))
-        self.output_files = sorted(os.listdir(spectro_dir))
+        self.spectrum_files = sorted(os.listdir(spectro_dir))
 
-        if len(self.input_files) != len(self.output_files):
+        if len(self.input_files) != len(self.spectrum_files):
             raise ValueError("Le nombre de fichiers d'entrée et de sortie doit être le même.")
 
         for i in range(len(self.input_files)):
-            if self.input_files[i].split("_")[-1] != self.output_files[i].split("_")[-1]:
-                print(f"Attention: Les noms de fichiers ne correspondent pas pour l'index {i}: {self.input_files[i]} vs {self.output_files[i]}")
+            if self.input_files[i].split("_")[-1] != self.spectrum_files[i].split("_")[-1]:
+                print(f"Attention: Les noms de fichiers ne correspondent pas pour l'index {i}: {self.input_files[i]} vs {self.spectrum_files[i]}")
 
 
     def __len__(self):
@@ -272,7 +296,7 @@ class VitESoSDataset(Dataset):
     def __getitem__(self, idx):
 
         input_filename = self.input_files[idx]
-        output_filename = self.output_files[idx]
+        output_filename = self.spectrum_files[idx]
 
         input_filepath = os.path.join(self.image_dir, input_filename)
         output_filepath = os.path.join(self.spectro_dir, output_filename)
@@ -310,17 +334,16 @@ if __name__ == "__main__":
     NOISY_DIR = os.path.join(DATA_DIR, folder_input)
     CLEAN_DIR = os.path.join(DATA_DIR, folder_output)
 
-    dataset = VitESoSDataset(image_dir=f"./results/output_simu/{datafold}/{folder_input}", spectro_dir=f"./results/output_simu/{datafold}/{folder_output}")
+    dataset = VitESoS_Dataset(image_dir=f"./results/output_simu/{datafold}/{folder_input}", spectro_dir=f"./results/output_simu/{datafold}/{folder_output}")
     dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
-    print(f"Dataset créé avec {len(dataset)} échantillons. DataLoader prêt.")
+    print(f"Size of loaded dataset : {len(dataset)}")
 
-    model = ViTESoS(emb_size=256, num_heads=4, ff_hidden_size=512, num_layers=2).to(DEVICE)
+    model = ViTESoS_Model().to(DEVICE)
 
     criterion = nn.MSELoss()
     optimizer = torch.optim.AdamW(model.parameters(), lr=LEARNING_RATE)
 
-    print("Modèle, fonction de perte et optimiseur initialisés.")
-    print(f"Nombre de paramètres du modèle: {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
+    print(f"Nb params : {sum(p.numel() for p in model.parameters() if p.requires_grad)}")
 
     print("\nDébut de l'entraînement...")
     for epoch in range(NUM_EPOCHS):

@@ -60,14 +60,22 @@ def load_model(model_name, device, path2architecture='./Spec2vecModels/'):
 
 def load_model_from_Args(args):
 
-    device = get_device(Args)
+    device = get_device(args)
 
-    if Args.from_pre:
-        model, Custom_dataloader = load_from_pretrained(Args.model, Args.loss, Args.pre_train, Args.pre_lr_str, device)
+    if args.from_pre:
+        model, Custom_dataloader = load_from_pretrained(args.model, args.loss, args.pre_train, args.pre_lr_str, device)
     else: 
-        model, Custom_dataloader = load_model(Args.model, device)
+        model, Custom_dataloader = load_model(args.model, device)
 
     return model, Custom_dataloader, device
+
+
+
+def load_optim(args):
+
+    
+
+    if optim_name == "Adam" : return optim.Adam()
 
 
 
@@ -80,11 +88,15 @@ if __name__ == "__main__":
 
     ### Define some params
     name = f"{Args.model}_{Args.loss}" # Ex. : SCaM_chi2
-    batch_size = params.batch_size_def if Args.model not in params.batch_size_models.keys() else param.batch_size_models[Args.model]
+    batch_size = params.batch_size_def if Args.model not in params.batch_size_models.keys() else params.batch_size_models[Args.model]
     loss_function = give_Loss_Function(Args.loss)
     model, Custom_dataloader, device = load_model_from_Args(Args)
-    optimizer = optim.Adam(model.parameters(), lr=Args.lr)
 
+    ### Define optimizer
+    optim_name = params.optim_def if Args.model not in params.optim_models else params.optim_models[Args.model]
+    if   optim_name == "Adam"  : optimizer = optim.Adam(model.parameters(), lr=Args.lr)
+    elif optim_name == "AdamW" : optimizer = optim.AdamW(model.parameters(), lr=Args.lr)
+    else : raise Exception(f"{c.r}The optimizer `optim_name` unknow. Please select Adam or AdamW.")
 
 
 
@@ -163,15 +175,17 @@ if __name__ == "__main__":
 
 
     ### Some print
-    print(f"{c.ly}INFO : Utilisation de l'appareil : {device}{c.d}")
-    print(f"{c.ly}INFO : Model architecture {name}{c.d}")
-    print(f"{c.ly}INFO : Name : {train_name}{c.d}")
-    print(f"{c.ly}INFO : Train : {Args.train}{c.d}")
-    print(f"{c.ly}INFO : Valid : {Args.valid}{c.d}")
-    print(f"{c.ly}INFO : Epoch : {Args.epochs}{c.d}")
-    print(f"{c.ly}INFO : Lrate : {Args.lr}{c.d}")
-    print(f"{c.ly}INFO : batch size : {batch_size}{c.d}")
-    print(f"{c.ly}INFO : Number of parameters : {sum(p.numel() for p in model.parameters() if p.requires_grad) // 10**6} millions{c.d}")
+    print(f"{c.ly}INFO : Size of the loaded train dataset : {c.d}{c.y}{len(train_dataset)}")
+    print(f"{c.ly}INFO : Size of the loaded train dataset : {c.d}{c.y}{len(valid_dataset)}")
+    print(f"{c.ly}INFO : Utilisation de l'appareil        : {c.d}{c.y}{device}{c.d}")
+    print(f"{c.ly}INFO : Model architecture               : {c.d}{c.y}{name}{c.d}")
+    print(f"{c.ly}INFO : Name                             : {c.d}{c.y}{train_name}{c.d}")
+    print(f"{c.ly}INFO : Train                            : {c.d}{c.y}{Args.train}{c.d}")
+    print(f"{c.ly}INFO : Valid                            : {c.d}{c.y}{Args.valid}{c.d}")
+    print(f"{c.ly}INFO : Epoch                            : {c.d}{c.y}{Args.epochs}{c.d}")
+    print(f"{c.ly}INFO : Lrate                            : {c.d}{c.y}{Args.lr}{c.d}")
+    print(f"{c.ly}INFO : batch size                       : {c.d}{c.y}{batch_size}{c.d}")
+    print(f"{c.ly}INFO : Number of parameters             : {c.d}{c.y}{sum(p.numel() for p in model.parameters() if p.requires_grad) // 10**6} millions{c.d}")
 
 
 

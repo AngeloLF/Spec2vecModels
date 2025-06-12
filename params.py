@@ -1,4 +1,5 @@
 # define SCaM params
+import torch.optim as optim
 
 def __getattr__(name):
 
@@ -27,3 +28,9 @@ batch_size_def = 64
 batch_size_models = {
     "ViTESoS" : 4,
 }
+
+optim_def = "Adam"
+optim_models = {
+    "ViTESoS" : "AdamW",
+}
+
