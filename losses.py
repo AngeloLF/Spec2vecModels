@@ -7,11 +7,18 @@ import params
 
 
 
-def give_Loss_Function(loss_name):
+def give_Loss_Function(loss_name, model_name):
 
-    if   loss_name == "chi2" : return Chi2Loss(params.Csigma_chi2, params.n_bins)
-    elif loss_name == "MSE" : return nn.MSELoss()
-    elif loss_name == "L1N" : return L1NLoss()
+    if   loss_name == "chi2":
+        n_bins = params.n_bins_def if model_name not in params.n_bins_models.keys() else params.n_bins_models[model_name]
+        return Chi2Loss(params.Csigma_chi2, n_bins)
+
+    elif loss_name == "MSE": 
+        return nn.MSELoss()
+
+    elif loss_name == "L1N":
+        return L1NLoss()
+        
     else: 
         print(f"{c.r}WARNING : loss name {loss_name} unknow{c.d}")
         raise ValueError("Loss name unknow")

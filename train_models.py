@@ -89,11 +89,11 @@ if __name__ == "__main__":
     ### Define some params
     name = f"{Args.model}_{Args.loss}" # Ex. : SCaM_chi2
     batch_size = params.batch_size_def if Args.model not in params.batch_size_models.keys() else params.batch_size_models[Args.model]
-    loss_function = give_Loss_Function(Args.loss)
+    loss_function = give_Loss_Function(Args.loss, Args.model)
     model, Custom_dataloader, device = load_model_from_Args(Args)
 
     ### Define optimizer
-    optim_name = params.optim_def if Args.model not in params.optim_models else params.optim_models[Args.model]
+    optim_name = params.optim_def if Args.model not in params.optim_models.keys() else params.optim_models[Args.model]
     if   optim_name == "Adam"  : optimizer = optim.Adam(model.parameters(), lr=Args.lr)
     elif optim_name == "AdamW" : optimizer = optim.AdamW(model.parameters(), lr=Args.lr)
     else : raise Exception(f"{c.r}The optimizer `optim_name` unknow. Please select Adam or AdamW.")
@@ -160,7 +160,7 @@ if __name__ == "__main__":
     valid_list_loss_mse = np.zeros(Args.epochs)
 
     # Chi2 loss
-    chi2_loss = Chi2Loss(params.Csigma_chi2, params.n_bins)
+    chi2_loss = give_Loss_Function("chi2", Args.model)
     train_list_loss_chi2 = np.zeros(Args.epochs)
     valid_list_loss_chi2 = np.zeros(Args.epochs)
 
@@ -178,6 +178,7 @@ if __name__ == "__main__":
     print(f"{c.ly}INFO : Size of the loaded train dataset : {c.d}{c.y}{len(train_dataset)}")
     print(f"{c.ly}INFO : Size of the loaded train dataset : {c.d}{c.y}{len(valid_dataset)}")
     print(f"{c.ly}INFO : Utilisation de l'appareil        : {c.d}{c.y}{device}{c.d}")
+    print(f"{c.ly}INFO : Optimizer                        : {c.d}{c.y}{optim_name}{c.d}")
     print(f"{c.ly}INFO : Model architecture               : {c.d}{c.y}{name}{c.d}")
     print(f"{c.ly}INFO : Name                             : {c.d}{c.y}{train_name}{c.d}")
     print(f"{c.ly}INFO : Train                            : {c.d}{c.y}{Args.train}{c.d}")
@@ -185,7 +186,7 @@ if __name__ == "__main__":
     print(f"{c.ly}INFO : Epoch                            : {c.d}{c.y}{Args.epochs}{c.d}")
     print(f"{c.ly}INFO : Lrate                            : {c.d}{c.y}{Args.lr}{c.d}")
     print(f"{c.ly}INFO : batch size                       : {c.d}{c.y}{batch_size}{c.d}")
-    print(f"{c.ly}INFO : Number of parameters             : {c.d}{c.y}{sum(p.numel() for p in model.parameters() if p.requires_grad) // 10**6} millions{c.d}")
+    print(f"{c.ly}INFO : Number of parameters             : {c.d}{c.y}{sum(p.numel() for p in model.parameters() if p.requires_grad) / 10**6:.2f} millions{c.d}")
 
 
 

@@ -21,8 +21,12 @@ seed = 42
 num_workers = 4
 lr_default = 0.001
 num_epochs = 2
-n_bins = 800
 Csigma_chi2 = 12.
+
+n_bins_def = 800
+n_bins_models = {
+    "ViTESoS" : 128*1024,
+}
 
 batch_size_def = 64
 batch_size_models = {

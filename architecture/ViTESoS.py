@@ -238,7 +238,7 @@ class ViTESoS_Model(nn.Module):
     # n_hidden   = 3072
     # num_layers = 6
 
-    def __init__(self, img_size=(128, 1024), in_channels=1, out_channels=1, patch_size=(16, 16), emb_size=768, num_heads=8, n_hidden=3072, num_layers=6, dropout=0.1):
+    def __init__(self, img_size=(128, 1024), in_channels=1, out_channels=1, patch_size=(16, 16), emb_size=384, num_heads=6, n_hidden=1536, num_layers=4, dropout=0.1):
 
 
         if "vitesostestparams" in sys.argv:
