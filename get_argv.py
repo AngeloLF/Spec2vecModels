@@ -1,6 +1,7 @@
 from types import SimpleNamespace
 import coloralf as c
 import torch
+import numpy as np
 
 
 
@@ -166,6 +167,7 @@ def get_argv(argv, prog=None, correction=True, show=False):
         Args.fulltrain_str = f"{Args.from_prefixe}{Args.train}"
         Args.fullname = f"{Args.model}_{Args.loss}_{Args.fulltrain_str}_{Args.lr_str}"
 
+        Args.wl = np.arange(300, 1100) if Args.model not in ["ViTESoS"] else np.arange(0, 1024)
         Args.folder_output = "spectrum" if Args.model not in ["ViTESoS"] else "spectrumPX"
 
 
