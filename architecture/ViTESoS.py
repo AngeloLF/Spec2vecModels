@@ -265,8 +265,8 @@ class ViTESoS_Model(nn.Module):
     def extraApply(self, pred, pathsave, spectro_name):
 
         suffixe = spectro_name.split(self.folder_output)[-1]
+        spectrumPX = np.sum(pred[0], axis=0)
 
-        spectrumPX = np.sum(pred, axis=0)
         np.save(f"{pathsave}/spectrumPX{suffixe}", spectrumPX)
 
 
