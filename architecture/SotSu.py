@@ -12,7 +12,7 @@ from tqdm import tqdm
 
 class SotSu_Model(nn.Module):
     """
-    SCaM Model : Simple CNN and MLP
+    SotSu
     """
 
     folder_input = "image"
