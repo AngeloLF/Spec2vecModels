@@ -89,8 +89,8 @@ if __name__ == "__main__":
     ### Define some params
     name = f"{Args.model}_{Args.loss}" # Ex. : SCaM_chi2
     batch_size = params.batch_size_def if Args.model not in params.batch_size_models.keys() else params.batch_size_models[Args.model]
-    loss_function = give_Loss_Function(Args.loss, Args.model)
     model, Custom_dataloader, device = load_model_from_Args(Args)
+    loss_function = give_Loss_Function(Args.loss, Args.model, f"{params.path}/{Args.train}", device)
 
     ### Define optimizer
     optim_name = params.optim_def if Args.model not in params.optim_models.keys() else params.optim_models[Args.model]
