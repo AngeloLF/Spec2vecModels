@@ -1,4 +1,4 @@
-import sys, json
+import sys, json, pickle
 import torch
 import torch.nn as nn
 import numpy as np
@@ -33,6 +33,37 @@ def give_Loss_Function(loss_name, model_name, train_path=None, device=None):
         print(f"ATM_AEROSOLS : {aerosols}")
 
         return MSEf3Loss(ozone, pwv, aerosols, device)
+
+    elif loss_name == "MSEmf3":
+        if train_path is None : raise Exception("In [give_Loss_Function.py], train_path is needed for loss MSEmf3 (here is None)")
+        if device is None : raise Exception("In [give_Loss_Function.py], device is needed for loss MSEmf3 (here is None)")
+        with open(f"{train_path}/hist_params.json", 'r') as f:
+            hp = json.load(f)
+        ozone, pwv, aerosols = hp["ATM_OZONE"], hp["ATM_PWV"], hp["ATM_AEROSOLS"] 
+        
+        print(f"Load from {train_path}/hist_params.json :")
+        print(f"ATM_OZONE    : {ozone}")
+        print(f"ATM_PWV      : {pwv}")
+        print(f"ATM_AEROSOLS : {aerosols}")
+
+        return MSEmf3Loss(ozone, pwv, aerosols, device)
+
+    elif loss_name == "MSEn":
+        if train_path is None : raise Exception("In [give_Loss_Function.py], train_path is needed for loss MSEn (here is None)")
+        if device is None : raise Exception("In [give_Loss_Function.py], device is needed for loss MSEn (here is None)")
+        with open(f"{train_path}/variable_params.pck", 'rb') as f:
+            vp = pickle.load(f)
+        ozone, pwv, aerosols = vp["ATM_OZONE"], vp["ATM_PWV"], vp["ATM_AEROSOLS"]
+        oms = (np.mean(ozone), np.std(ozone) + 1e-8)
+        pms = (np.mean(pwv), np.std(pwv) + 1e-8)
+        ams = (np.mean(aerosols), np.std(aerosols) + 1e-8)
+
+        print(f"Load from {train_path}/hist_params.json :")
+        print(f"ATM_OZONE    : {oms}")
+        print(f"ATM_PWV      : {pms}")
+        print(f"ATM_AEROSOLS : {ams}")
+
+        return MSEnLoss(oms, pms, ams, device)
 
     else: 
         print(f"{c.r}WARNING : loss name {loss_name} unknow{c.d}")
@@ -86,5 +117,50 @@ class MSEf3Loss(nn.Module):
         loss = torch.sum(torch.pow(l1, 2))
 
         # print(f"forward MSEf3Loss : {y_pred} \n {y_true} \n {diff} \n {l1} : {l1s} -2> {loss}")
+
+        return loss
+
+
+
+class MSEmf3Loss(nn.Module):
+
+    def __init__(self, ozone, pwv, aerosols, device):
+        super(MSEmf3Loss, self).__init__()
+        self.o = ozone
+        self.p = pwv
+        self.a = aerosols
+        self.opaMIN = np.array([ozone[0], pwv[0], aerosols[0]])
+        self.opaMAX = np.array([ozone[1], pwv[1], aerosols[1]])
+
+        self.ranges = torch.tensor(self.opaMAX-self.opaMIN).to(device)
+        self.divide = 1.0 / torch.pow(self.ranges, 2)
+        
+
+    def forward(self, y_pred, y_true):
+
+        diff = torch.pow(y_pred - y_true, 2)
+        loss = (self.divide * diff).mean()
+
+        # print(f"forward MSEf3Loss : {y_pred} \n {y_true} \n {diff} \n {l1} : {l1s} -2> {loss}")
+
+        return loss
+
+
+
+class MSEnLoss(nn.Module):
+
+    def __init__(self, ozone, pwv, aerosols, device):
+        super(MSEnLoss, self).__init__()
+        self.o = ozone
+        self.p = pwv
+        self.a = aerosols
+        self.mu = torch.tensor(np.array([ozone[0], pwv[0], aerosols[0]]).astype(np.float32)).to(device)
+        self.sigma = torch.tensor(np.array([ozone[1], pwv[1], aerosols[1]]).astype(np.float32)).to(device)
+
+
+    def forward(self, y_pred, y_true):
+
+        y_true_norma = (y_true - self.mu) / self.sigma
+        loss = torch.nn.functional.mse_loss(y_pred, y_true_norma)
 
         return loss
