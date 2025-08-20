@@ -99,7 +99,7 @@ def give_Loss_Function(loss_name, model_name, train_path=None, device=None):
         print(f"ATM_PWV      : {pms}")
         print(f"ATM_AEROSOLS : {ams}")
 
-        return OzoneLoss(oms, pms, ams, device)
+        return OzoneLoss(oms, pms, ams, device, model_name)
 
     elif loss_name == "OzoneS":
         if train_path is None : raise Exception("In [give_Loss_Function.py], train_path is needed for loss Ozone (here is None)")
@@ -116,7 +116,7 @@ def give_Loss_Function(loss_name, model_name, train_path=None, device=None):
         print(f"ATM_PWV      : {pms}")
         print(f"ATM_AEROSOLS : {ams}")
 
-        return OzoneSLoss(oms, pms, ams, device)
+        return OzoneSLoss(oms, pms, ams, device, model_name)
 
     elif loss_name == "OzoneFree":
         if train_path is None : raise Exception("In [give_Loss_Function.py], train_path is needed for loss Ozone (here is None)")
@@ -133,7 +133,7 @@ def give_Loss_Function(loss_name, model_name, train_path=None, device=None):
         print(f"ATM_PWV      : {pms}")
         print(f"ATM_AEROSOLS : {ams}")
 
-        return OzoneFreeLoss(oms, pms, ams, device)
+        return OzoneFreeLoss(oms, pms, ams, device, model_name)
 
     elif loss_name == "OzoneSFree":
         if train_path is None : raise Exception("In [give_Loss_Function.py], train_path is needed for loss Ozone (here is None)")
@@ -150,7 +150,7 @@ def give_Loss_Function(loss_name, model_name, train_path=None, device=None):
         print(f"ATM_PWV      : {pms}")
         print(f"ATM_AEROSOLS : {ams}")
 
-        return OzoneSFreeLoss(oms, pms, ams, device)
+        return OzoneSFreeLoss(oms, pms, ams, device, model_name)
 
 
     else: 
@@ -287,14 +287,22 @@ class MSEsLoss(nn.Module):
 
 class OzoneSLoss(nn.Module):
 
-    def __init__(self, ozone, pwv, aerosols, device):
+    def __init__(self, ozone, pwv, aerosols, device, model_name):
         super(OzoneSLoss, self).__init__()
         self.o = ozone
         self.p = pwv
         self.a = aerosols
-        self.mu = torch.tensor(np.array([ozone[0], pwv[0], aerosols[0]]).astype(np.float32)).to(device)
-        self.sigma = torch.tensor(np.array([ozone[1], pwv[1], aerosols[1]]).astype(np.float32)).to(device)
-        self.w = torch.tensor(np.array([1., 0., 0.]).astype(np.float32)).to(device)
+
+        if "FOBIQ" in model_name:
+
+            self.mu, self.sigma = ozone
+            self.w = 1.0
+
+        else:
+
+            self.mu = torch.tensor(np.array([ozone[0], pwv[0], aerosols[0]]).astype(np.float32)).to(device)
+            self.sigma = torch.tensor(np.array([ozone[1], pwv[1], aerosols[1]]).astype(np.float32)).to(device)
+            self.w = torch.tensor(np.array([1., 0., 0.]).astype(np.float32)).to(device)
 
 
     def forward(self, y_pred, y_true):
@@ -309,7 +317,7 @@ class OzoneSLoss(nn.Module):
 
 class OzoneSFreeLoss(nn.Module):
 
-    def __init__(self, ozone, pwv, aerosols, device):
+    def __init__(self, ozone, pwv, aerosols, device, model_name):
         super(OzoneSFreeLoss, self).__init__()
         self.o = ozone
         self.p = pwv
@@ -331,7 +339,7 @@ class OzoneSFreeLoss(nn.Module):
 
 class OzoneLoss(nn.Module):
 
-    def __init__(self, ozone, pwv, aerosols, device):
+    def __init__(self, ozone, pwv, aerosols, device, model_name):
         super(OzoneLoss, self).__init__()
         self.w = torch.tensor(np.array([1., 0., 0.]).astype(np.float32)).to(device)
 
@@ -347,7 +355,7 @@ class OzoneLoss(nn.Module):
 
 class OzoneFreeLoss(nn.Module):
 
-    def __init__(self, ozone, pwv, aerosols, device):
+    def __init__(self, ozone, pwv, aerosols, device, model_name):
         super(OzoneFreeLoss, self).__init__()
         self.w = torch.tensor(np.array([1., 0., 0.]).astype(np.float32)).to(device)
 
