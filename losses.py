@@ -202,4 +202,4 @@ class MSEsLoss(nn.Module):
         y_true_norma = (y_true - self.mu) / self.sigma
         loss = torch.nn.functional.mse_loss(y_pred_norma, y_true_norma)
 
-        return loss
+        return loss 
