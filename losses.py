@@ -65,6 +65,23 @@ def give_Loss_Function(loss_name, model_name, train_path=None, device=None):
 
         return MSEnLoss(oms, pms, ams, device)
 
+    elif loss_name == "MSEs":
+        if train_path is None : raise Exception("In [give_Loss_Function.py], train_path is needed for loss MSEs (here is None)")
+        if device is None : raise Exception("In [give_Loss_Function.py], device is needed for loss MSEs (here is None)")
+        with open(f"{train_path}/variable_params.pck", 'rb') as f:
+            vp = pickle.load(f)
+        ozone, pwv, aerosols = vp["ATM_OZONE"], vp["ATM_PWV"], vp["ATM_AEROSOLS"]
+        oms = (np.mean(ozone), np.std(ozone) + 1e-8)
+        pms = (np.mean(pwv), np.std(pwv) + 1e-8)
+        ams = (np.mean(aerosols), np.std(aerosols) + 1e-8)
+
+        print(f"Load from {train_path}/hist_params.json :")
+        print(f"ATM_OZONE    : {oms}")
+        print(f"ATM_PWV      : {pms}")
+        print(f"ATM_AEROSOLS : {ams}")
+
+        return MSEsLoss(oms, pms, ams, device)
+
     else: 
         print(f"{c.r}WARNING : loss name {loss_name} unknow{c.d}")
         raise ValueError("Loss name unknow")
@@ -162,5 +179,27 @@ class MSEnLoss(nn.Module):
 
         y_true_norma = (y_true - self.mu) / self.sigma
         loss = torch.nn.functional.mse_loss(y_pred, y_true_norma)
+
+        return loss
+
+
+
+
+class MSEsLoss(nn.Module):
+
+    def __init__(self, ozone, pwv, aerosols, device):
+        super(MSEsLoss, self).__init__()
+        self.o = ozone
+        self.p = pwv
+        self.a = aerosols
+        self.mu = torch.tensor(np.array([ozone[0], pwv[0], aerosols[0]]).astype(np.float32)).to(device)
+        self.sigma = torch.tensor(np.array([ozone[1], pwv[1], aerosols[1]]).astype(np.float32)).to(device)
+
+
+    def forward(self, y_pred, y_true):
+
+        y_pred_norma = (y_pred - self.mu) / self.sigma
+        y_true_norma = (y_true - self.mu) / self.sigma
+        loss = torch.nn.functional.mse_loss(y_pred_norma, y_true_norma)
 
         return loss
