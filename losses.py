@@ -227,10 +227,17 @@ class MSEsLoss(nn.Module):
 
 
 
-class OzoneLoss(nn.Module):
+
+
+
+
+
+
+
+class OzoneSLoss(nn.Module):
 
     def __init__(self, ozone, pwv, aerosols, device):
-        super(OzoneLoss, self).__init__()
+        super(OzoneSLoss, self).__init__()
         self.o = ozone
         self.p = pwv
         self.a = aerosols
@@ -245,4 +252,58 @@ class OzoneLoss(nn.Module):
         y_true_norma = (y_true - self.mu) / self.sigma * self.w
         loss = torch.nn.functional.mse_loss(y_pred_norma, y_true_norma)
 
-        return loss 
+        return loss
+
+
+
+class OzoneSFreeLoss(nn.Module):
+
+    def __init__(self, ozone, pwv, aerosols, device):
+        super(OzoneSFreeLoss, self).__init__()
+        self.o = ozone
+        self.p = pwv
+        self.a = aerosols
+        self.mu = torch.tensor(np.array([ozone[0], pwv[0], aerosols[0]]).astype(np.float32)).to(device)
+        self.sigma = torch.tensor(np.array([ozone[1], pwv[1], aerosols[1]]).astype(np.float32)).to(device)
+        self.w = torch.tensor(np.array([1., 0., 0.]).astype(np.float32)).to(device)
+
+
+    def forward(self, y_pred, y_true):
+
+        y_pred_norma = (y_pred - self.mu) / self.sigma * self.w
+        y_true_norma = (y_true - self.mu) / self.sigma * self.w
+        loss = torch.nn.functional.mse_loss(y_pred_norma, y_true_norma)
+
+        return loss
+
+
+
+class OzoneLoss(nn.Module):
+
+    def __init__(self, ozone, pwv, aerosols, device):
+        super(OzoneLoss, self).__init__()
+        self.w = torch.tensor(np.array([1., 0., 0.]).astype(np.float32)).to(device)
+
+
+    def forward(self, y_pred, y_true):
+
+        diff = (y_pred - y_true * self.w)
+        loss = torch.sum(torch.pow(diff, 2))
+
+        return loss
+
+
+
+class OzoneFreeLoss(nn.Module):
+
+    def __init__(self, ozone, pwv, aerosols, device):
+        super(OzoneFreeLoss, self).__init__()
+        self.w = torch.tensor(np.array([1., 0., 0.]).astype(np.float32)).to(device)
+
+
+    def forward(self, y_pred, y_true):
+
+        diff = (y_pred - y_true) * self.w
+        loss = torch.sum(torch.pow(diff, 2))
+
+        return loss
