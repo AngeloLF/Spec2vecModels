@@ -101,6 +101,57 @@ def give_Loss_Function(loss_name, model_name, train_path=None, device=None):
 
         return OzoneLoss(oms, pms, ams, device)
 
+    elif loss_name == "OzoneS":
+        if train_path is None : raise Exception("In [give_Loss_Function.py], train_path is needed for loss Ozone (here is None)")
+        if device is None : raise Exception("In [give_Loss_Function.py], device is needed for loss Ozone (here is None)")
+        with open(f"{train_path}/variable_params.pck", 'rb') as f:
+            vp = pickle.load(f)
+        ozone, pwv, aerosols = vp["ATM_OZONE"], vp["ATM_PWV"], vp["ATM_AEROSOLS"]
+        oms = (np.mean(ozone), np.std(ozone) + 1e-8)
+        pms = (np.mean(pwv), np.std(pwv) + 1e-8)
+        ams = (np.mean(aerosols), np.std(aerosols) + 1e-8)
+
+        print(f"Load from {train_path}/hist_params.json :")
+        print(f"ATM_OZONE    : {oms}")
+        print(f"ATM_PWV      : {pms}")
+        print(f"ATM_AEROSOLS : {ams}")
+
+        return OzoneSLoss(oms, pms, ams, device)
+
+    elif loss_name == "OzoneFree":
+        if train_path is None : raise Exception("In [give_Loss_Function.py], train_path is needed for loss Ozone (here is None)")
+        if device is None : raise Exception("In [give_Loss_Function.py], device is needed for loss Ozone (here is None)")
+        with open(f"{train_path}/variable_params.pck", 'rb') as f:
+            vp = pickle.load(f)
+        ozone, pwv, aerosols = vp["ATM_OZONE"], vp["ATM_PWV"], vp["ATM_AEROSOLS"]
+        oms = (np.mean(ozone), np.std(ozone) + 1e-8)
+        pms = (np.mean(pwv), np.std(pwv) + 1e-8)
+        ams = (np.mean(aerosols), np.std(aerosols) + 1e-8)
+
+        print(f"Load from {train_path}/hist_params.json :")
+        print(f"ATM_OZONE    : {oms}")
+        print(f"ATM_PWV      : {pms}")
+        print(f"ATM_AEROSOLS : {ams}")
+
+        return OzoneFreeLoss(oms, pms, ams, device)
+
+    elif loss_name == "OzoneSFree":
+        if train_path is None : raise Exception("In [give_Loss_Function.py], train_path is needed for loss Ozone (here is None)")
+        if device is None : raise Exception("In [give_Loss_Function.py], device is needed for loss Ozone (here is None)")
+        with open(f"{train_path}/variable_params.pck", 'rb') as f:
+            vp = pickle.load(f)
+        ozone, pwv, aerosols = vp["ATM_OZONE"], vp["ATM_PWV"], vp["ATM_AEROSOLS"]
+        oms = (np.mean(ozone), np.std(ozone) + 1e-8)
+        pms = (np.mean(pwv), np.std(pwv) + 1e-8)
+        ams = (np.mean(aerosols), np.std(aerosols) + 1e-8)
+
+        print(f"Load from {train_path}/hist_params.json :")
+        print(f"ATM_OZONE    : {oms}")
+        print(f"ATM_PWV      : {pms}")
+        print(f"ATM_AEROSOLS : {ams}")
+
+        return OzoneSFreeLoss(oms, pms, ams, device)
+
 
     else: 
         print(f"{c.r}WARNING : loss name {loss_name} unknow{c.d}")
