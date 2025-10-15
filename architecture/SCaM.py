@@ -77,4 +77,7 @@ class SCaM_Dataset(Dataset):
         spectrum = np.load(self.spectrum_files[idx]).astype(np.float32)
         # add une dimension de canal pour le CNN (1 canal car image en niveaux de gris implicite)
         image = np.expand_dims(image, axis=0)
-        return torch.tensor(image), torch.tensor(spectrum)
+        return torch.from_numpy(image).float(), torch.from_numpy(spectrum).float()
+
+
+
