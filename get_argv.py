@@ -16,7 +16,7 @@ def get_argv(argv, prog=None, correction=False, show=False):
     Args.pre_train, Args.pre_lr, Args.pre_lr_str = None, None, None
 
     Args.device = "cpu"
-    if prog in ["training"] : Args.device = "cuda"
+    if prog in ["training"] : Args.device = "gpu"
 
 
 
@@ -41,8 +41,7 @@ def get_argv(argv, prog=None, correction=False, show=False):
         if arg[:5] == "spec="  : Args.spec  = arg[5:]
         
         if arg == "cpu"        : Args.device = "cpu"
-        if arg == "gpu"        : Args.device = "cuda"
-        if arg == "cuda"       : Args.device = "cuda"
+        if arg == "gpu"        : Args.device = "gpu"
 
         if arg == "show"       : Args.show = True
         if arg == "nosave"     : Args.save = False
@@ -194,12 +193,21 @@ def show_Args(args):
 
 def get_device(args):
 
-    if args.device == "cuda" and torch.cuda.is_available():
+    # For GPU, with NVIDIA
+    if args.device == "gpu" and torch.cuda.is_available():
         device = torch.device("cuda")
+        print(f"{c.ly}INFO : torch device turn to GPU/CUDA (NVIDIA)")
+
+    # For GPU, with Apple M
+    elif args.device == "gpu" and torch.backends.mps.is_available():
+        device = torch.device("mps")
+        print(f"{c.ly}INFO : torch device turn to GPU/MPS (Apple)")
+
+    # If no GPU avaible or not wanted 
     else:
         if args.device == "cuda" : print(f"{c.r}WARNING : GPU is not available for torch ... device turn to CPU ... ")
         device = torch.device("cpu")
-
+    
     print(f"{c.ly}INFO : Utilisation du device {c.tu}{device}{c.d}{c.d}")
     return device
 
