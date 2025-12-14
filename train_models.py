@@ -73,8 +73,6 @@ def load_model_from_Args(args):
 
 def load_optim(args):
 
-    
-
     if optim_name == "Adam" : return optim.Adam()
 
 
@@ -118,6 +116,11 @@ if __name__ == "__main__":
     output_state      = f"{full_out_path}/{params.out_states}"     # Ex. : ./results/Spec2vecModels_Results/SCaM_chi2/states
     output_divers     = f"{full_out_path}/{params.out_divers}"     # Ex. : ./results/Spec2vecModels_Results/SCaM_chi2/divers
 
+    # find tel
+    if "ctio" in Args.train : tel = "ctio"
+    elif "auxtel" in Args.train : tel = "auxtel"
+    else : tel = None
+
     # Create folder in case ...
     os.makedirs(f"{params.out_path}/{params.out_dir}", exist_ok=True) # Ex. : ./results/Spec2vecModels_Results
     os.makedirs(full_out_path, exist_ok=True)                         # Ex. : ./results/Spec2vecModels_Results/SCaM_chi2
@@ -137,8 +140,13 @@ if __name__ == "__main__":
     ### Data set loading
 
     # Créer le Dataset complet
-    train_dataset = Custom_dataloader(train_inp_dir, train_out_dir)
-    valid_dataset = Custom_dataloader(valid_inp_dir, valid_out_dir)
+    if tel is None:
+        train_dataset = Custom_dataloader(train_inp_dir, train_out_dir)
+        valid_dataset = Custom_dataloader(valid_inp_dir, valid_out_dir)
+    else:
+        train_dataset = Custom_dataloader(train_inp_dir, train_out_dir, tel)
+        valid_dataset = Custom_dataloader(valid_inp_dir, valid_out_dir, tel)
+        
 
     # Créer les DataLoaders pour l'entraînement et la validation
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
@@ -146,7 +154,7 @@ if __name__ == "__main__":
 
 
 
-    
+
 
     ### Define losses
 
@@ -175,8 +183,9 @@ if __name__ == "__main__":
 
 
     ### Some print
-    print(f"{c.ly}INFO : Size of the loaded train dataset : {c.d}{c.y}{len(train_dataset)}")
-    print(f"{c.ly}INFO : Size of the loaded train dataset : {c.d}{c.y}{len(valid_dataset)}")
+    print(f"{c.ly}INFO : Size of the loaded train dataset : {c.d}{c.y}{len(train_dataset)}{c.d}")
+    print(f"{c.ly}INFO : Size of the loaded train dataset : {c.d}{c.y}{len(valid_dataset)}{c.d}")
+    print(f"{c.ly}INFO : Telescope detected               : {c.d}{c.y}{tel}{c.d}")
     print(f"{c.ly}INFO : Utilisation de l'appareil        : {c.d}{c.y}{device}{c.d}")
     print(f"{c.ly}INFO : Optimizer                        : {c.d}{c.y}{optim_name}{c.d}")
     print(f"{c.ly}INFO : Model architecture               : {c.d}{c.y}{name}{c.d}")
