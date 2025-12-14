@@ -140,12 +140,8 @@ if __name__ == "__main__":
     ### Data set loading
 
     # Créer le Dataset complet
-    if tel is None:
-        train_dataset = Custom_dataloader(train_inp_dir, train_out_dir)
-        valid_dataset = Custom_dataloader(valid_inp_dir, valid_out_dir)
-    else:
-        train_dataset = Custom_dataloader(train_inp_dir, train_out_dir, tel)
-        valid_dataset = Custom_dataloader(valid_inp_dir, valid_out_dir, tel)
+    train_dataset = Custom_dataloader(train_inp_dir, train_out_dir)
+    valid_dataset = Custom_dataloader(valid_inp_dir, valid_out_dir)
         
 
     # Créer les DataLoaders pour l'entraînement et la validation

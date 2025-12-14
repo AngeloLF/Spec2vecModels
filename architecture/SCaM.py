@@ -22,22 +22,22 @@ class SCaM_Model(nn.Module):
 
         super(SCaM_Model, self).__init__()
 
-        # Image d'entrée : 1x128x1024 --- 1x64x2048
+        # Image d'entrée : 1x128x1024
         
         # 1ere convolution CNN
-        self.conv1 = nn.Conv2d(1, 16, kernel_size=(3, 3), padding=(1, 1))  # -> 16x128x1024 --- 16x64x2048
+        self.conv1 = nn.Conv2d(1, 16, kernel_size=(3, 3), padding=(1, 1))  # -> 16x128x1024
         self.relu1 = nn.ReLU()
-        self.pool1 = nn.MaxPool2d(kernel_size=(2, 2), stride=(2, 2))       # -> 16x64x512 --- 16x32x1024
+        self.pool1 = nn.MaxPool2d(kernel_size=(2, 2), stride=(2, 2))       # -> 16x64x512
 
         # 2eme convolution CNN
-        self.conv2 = nn.Conv2d(16, 32, kernel_size=(3, 3), padding=(1, 1)) # -> 32x64x512 --- 32x32x1024
+        self.conv2 = nn.Conv2d(16, 32, kernel_size=(3, 3), padding=(1, 1)) # -> 32x64x512
         self.relu2 = nn.ReLU()
-        self.pool2 = nn.MaxPool2d(kernel_size=(2, 2), stride=(2, 2))       # -> 32x32x256 --- 32x16x512
+        self.pool2 = nn.MaxPool2d(kernel_size=(2, 2), stride=(2, 2))       # -> 32x32x256
 
         # 3eme convolution CNN
-        self.conv3 = nn.Conv2d(32, 64, kernel_size=(3, 3), padding=(1, 1)) # -> 64x32x256 --- 64x16x512
+        self.conv3 = nn.Conv2d(32, 64, kernel_size=(3, 3), padding=(1, 1)) # -> 64x32x256
         self.relu3 = nn.ReLU()
-        self.pool3 = nn.MaxPool2d(kernel_size=(2, 2), stride=(2, 2))       # -> 64x16x128 --- 64x8x258
+        self.pool3 = nn.MaxPool2d(kernel_size=(2, 2), stride=(2, 2))       # -> 64x16x128
 
         # On applatit les dernier filtre
         self.flatten = nn.Flatten() # -> 131072
@@ -62,18 +62,12 @@ class SCaM_Model(nn.Module):
 
 # Classe pour le Dataset personnalisé
 class SCaM_Dataset(Dataset):
-    def __init__(self, image_dir, spectrum_dir, telescope=None):
+    def __init__(self, image_dir, spectrum_dir):
         self.image_files = sorted([os.path.join(image_dir, f) for f in os.listdir(image_dir) if f.endswith(".npy")])
         self.spectrum_files = sorted([os.path.join(spectrum_dir, f) for f in os.listdir(spectrum_dir) if f.endswith(".npy")])
 
         # prof si le nombre est différent ....
         assert len(self.image_files) == len(self.spectrum_files), "Le nombre de fichiers images / spectrums ne correspond pas"
-
-        if telescope is not None and telescope in ["auxtel"]:
-            print(f"Apply reduction for AuxTel AVGPOOL 2x2")
-            self.reduction = {"kernel_size":(2, 2), "stride":(2, 2)}
-        else:
-            self.reduction = None
 
     def __len__(self):
         return len(self.image_files)
@@ -81,25 +75,9 @@ class SCaM_Dataset(Dataset):
     def __getitem__(self, idx):
         image = np.load(self.image_files[idx]).astype(np.float32)
         spectrum = np.load(self.spectrum_files[idx]).astype(np.float32)
-
         # add une dimension de canal pour le CNN (1 canal car image en niveaux de gris implicite)
-        # image = np.expand_dims(image, axis=0)
-        image = torch.from_numpy(image).unsqueeze(0)
-
-        if self.reduction is not None:
-            image = nn.functional.avg_pool2d(image, **self.reduction)
-
-
-        # return torch.from_numpy(image).float(), torch.from_numpy(spectrum).float()
-        return image, torch.from_numpy(spectrum).float()
-
-
-
-
-
-
-
-
+        image = np.expand_dims(image, axis=0)
+        return torch.from_numpy(image).float(), torch.from_numpy(spectrum).float()
 
 
 
