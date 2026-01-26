@@ -58,27 +58,39 @@ def get_argv(argv, prog=None, correction=False, show=False):
                 Args.from_prefixe = f"{Args.pre_train}_{Args.pre_lr_str}_"
 
 
+    ### Exception
+
+    # extract_atmo -> model "spectrum" & "spectractorfile" (not pred Spectractor) dont have loss ...
+    if prog == "extract_atmo" and "model" in dir(Args) and Args.model in ["true", "spectractorfile"]:
+
+        Args.loss = None
+        Args.train = None
+        Args.lr = None
+        Args.lr_str = ""
+
+
+
     
     if prog is not None:
 
         Errors = list()
 
 
-        if "model" not in dir(Args) and prog in ["training", "apply", "analyse", "gradcam", "residus"]:
+        if "model" not in dir(Args) and prog in ["training", "apply", "analyse", "gradcam", "residus", "extract_atmo"]:
 
             print(f"{c.r}WARNING : model architecture is not define (model=<model_architecture>){c.d}")
             Errors.append("Model architecture")
 
 
 
-        if "loss" not in dir(Args) and prog in ["training", "apply", "analyse", "gradcam", "residus"]:
+        if "loss" not in dir(Args) and prog in ["training", "apply", "analyse", "gradcam", "residus", "extract_atmo"]:
 
             print(f"{c.r}WARNING : loss function is not define (loss=<loss_function>){c.d}")
             Errors.append("Loss function")
 
 
 
-        if "train" not in dir(Args) and prog in ["training", "apply", "analyse", "gradcam", "residus"]:
+        if "train" not in dir(Args) and prog in ["training", "apply", "analyse", "gradcam", "residus", "extract_atmo"]:
 
             print(f"{c.r}WARNING : train folder is not define (train=<train_folder>){c.d}")
             Errors.append("Train folder")
@@ -96,7 +108,7 @@ def get_argv(argv, prog=None, correction=False, show=False):
 
 
 
-        if "test" not in dir(Args) and prog in ["apply", "analyse", "gradcam", "residus"]:
+        if "test" not in dir(Args) and prog in ["apply", "analyse", "gradcam", "residus", "extract_atmo", "analyse_atmo"]:
 
             print(f"{c.r}WARNING : test folder is not define (test=<test_folder>){c.d}")
             Errors.append("Test folder") # raise Exception("test folder is not define")
@@ -112,7 +124,7 @@ def get_argv(argv, prog=None, correction=False, show=False):
 
 
 
-        if "lr" not in dir(Args) and prog in ["training", "apply", "analyse", "gradcam", "residus"]:
+        if "lr" not in dir(Args) and prog in ["training", "apply", "analyse", "gradcam", "residus", "extract_atmo"]:
 
             print(f"{c.r}WARNING : learning rate is not define (lr=<learning_rate>){c.d}")
             Errors.append("Learning rate") # raise Exception("Learning rate is not define")
@@ -160,7 +172,7 @@ def get_argv(argv, prog=None, correction=False, show=False):
 
 
 
-    if prog in ["training", "apply", "analyse", "gradcam", "residus"]:
+    if prog in ["training", "apply", "analyse", "gradcam", "residus", "extract_atmo"]:
 
         Args.model_loss = f"{Args.model}_{Args.loss}"
         Args.fulltrain_str = f"{Args.from_prefixe}{Args.train}"
